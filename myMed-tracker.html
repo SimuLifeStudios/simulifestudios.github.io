@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 8px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            margin: auto;
+        }
+        
+        .modal-content h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .modal-content p {
+            line-height: 1.6;
+            margin-bottom: 12px;
+            color: #555;
+        }
+        
+        .modal-content ul {
+            margin: 12px 0 12px 20px;
+            color: #555;
+        }
+        
+        .modal-content li {
+            margin-bottom: 8px;
+        }
+        
+        .pin-input {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .pin-digit {
+            width: 60px;
+            height: 60px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        
+        .pin-digit:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
+        }
+        
+        .pin-error {
+            background: #fee;
+            color: #c00;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            display: none;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .btn-danger {
+            background: #e53e3e;
+            color: white;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .header-actions button {
+            flex: 1;
+            min-width: 100px;
+            padding: 10px;
+            font-size: 12px;
+        }
+        
+        .lock-status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .lock-status.locked {
+            background: #fed7d7;
+            color: #c53030;
+        }
+        
+        .lock-status.unlocked {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            margin-bottom: 12px;
+            padding: 4px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .tab {
+            padding: 10px 14px;
+            background: #f7fafc;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            font-size: 12px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .content {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+        
+        .section h3 {
+            color: #667eea;
+            font-size: 16px;
+            margin: 20px 0 12px;
+        }
+        
+        .locked-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #718096;
+        }
+        
+        .locked-message h3 {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 12px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        
+        @media (min-width: 640px) {
+            .form-row {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        .records-list {
+            margin-top: 15px;
+        }
+        
+        .record-card {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .record-card h3 {
+            color: #667eea;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .record-detail {
+            font-size: 13px;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+        
+        .record-detail-item {
+            margin-bottom: 6px;
+        }
+        
+        .record-detail-item label {
+            font-weight: 600;
+            color: #2d3748;
+            display: inline;
+        }
+        
+        .record-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .record-actions button {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .edit-btn {
+            background: #667eea;
+            color: white;
+        }
+        
+        .delete-btn {
+            background: #e53e3e;
+            color: white;
+        }
+        
+        .add-record-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+        
+        .save-status {
+            text-align: center;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .save-status.success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .form-modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .form-modal-actions button {
+            flex: 1;
+        }
+        
+        .insurance-type-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #667eea;
+            color: white;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Welcome Modal -->
+        <div class="modal active" id="welcomeModal">
+            <div class="modal-content">
+                <h2>🏥 Welcome to Medical Tracker</h2>
+                <p><strong>Comprehensive Medical Records Management</strong></p>
+                <p>Track everything in one secure place:</p>
+                <ul>
+                    <li>Patient Information</li>
+                    <li>Doctors & Providers</li>
+                    <li>All Types of Insurance</li>
+                    <li>Appointments</li>
+                    <li>Medications</li>
+                    <li>Allergies & Vaccines</li>
+                    <li>Test Results & Surgeries</li>
+                    <li>Symptoms & Family History</li>
+                    <li>Disability Claims & Prior Authorizations</li>
+                </ul>
+                <p><strong>🔐 Security:</strong> Protected with 4-digit PIN</p>
+                <p><strong>💾 Storage:</strong> All data stays on your device</p>
+                <button class="btn btn-primary" onclick="setupPIN()">Get Started</button>
+            </div>
+        </div>
+        
+        <!-- PIN Setup Modal -->
+        <div class="modal" id="pinSetupModal">
+            <div class="modal-content">
+                <h2>Create Your PIN</h2>
+                <p>Enter a 4-digit PIN:</p>
+                <div class="pin-input">
+                    <input type="tel" maxlength="1" pattern="[0-9]" class="pin-digit" id="setup1" inputmode="numeric">
+                    <input type="tel" maxlength="1" pattern="[0-9]" class="pin-digit" id="setup2" inputmode="numeric">
+                    <input type="tel" maxlength="1" pattern="[0-9]" class="pin-digit" id="setup3" inputmode="numeric">
+                    <input type="tel" maxlength="1" pattern="[0-9]" class="pin-digit" id="setup4" inputmode="numeric">
+                </div>
+                <p>Confirm your PIN:</p>
+                <div class="pin-input">
+                    <input type="tel" maxlength="1" pattern="[0-9]" class="pin-digit" id="confirm1" inputmode="numeric">
+                    <input type="tel" maxlength="1" pattern="[0-9]" class="pin-digit" id="confirm2" inputmode="numeric">
+                    <input type="tel" maxlength="1" pattern="[0-9]" class="pin-digit" id="confirm3" inputmode="numeric">
+                    <input type="tel" maxlength="1" pattern="[0-9]" class="pin-digit" id="confirm4" inputmode="numeric">
+                </div>
+                <div class="pin-error" id="setupError"></div>
+                <button class="btn btn-primary" onclick="confirmPIN()">Create PIN</button>
+            </div>
+        </div>
+        
+        <!-- Security Question Setup Modal -->
+        <div class="modal" id="securityQuestionModal">
+            <div class="modal-content">
+                <h2>Set Security Question</h2>
+                <p>This will help you recover your PIN if you forget it.</p>
+                <div class="form-group">
+                    <label>Choose a security question:</label>
+                    <select id="securityQuestion" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;">
+                        <option value="">Select a question...</option>
+                        <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
+                        <option value="What was the name of your first pet?">What was the name of your first pet?</option>
+                        <option value="In what city were you born?">In what city were you born?</option>
+                        <option value="What is your favorite color?">What is your favorite color?</option>
+                        <option value="What was your childhood nickname?">What was your childhood nickname?</option>
+                        <option value="What is your favorite food?">What is your favorite food?</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-top:15px;">
+                    <label>Your answer:</label>
+                    <input type="text" id="securityAnswer" placeholder="Enter your answer" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;">
+                </div>
+                <div class="pin-error" id="securityError"></div>
+                <button class="btn btn-primary" onclick="saveSecurityQuestion()">Continue</button>
+            </div>
+        </div>
+        
+        <!-- PIN Unlock Modal -->
+        <div class="modal" id="pinUnlockModal">
+            <div class="modal-content">
+                <h2>Enter PIN to Unlock</h2>
+                <div class="pin-input">
+                    <input type="tel" maxlength="1" pattern="[0-9]" class="pin-digit" id="unlock1" inputmode="numeric">
+                    <input type="tel" maxlength="1" pattern="[0-9]" class="pin-digit" id="unlock2" inputmode="numeric">
+                    <input type="tel" maxlength="1" pattern="[0-9]" class="pin-digit" id="unlock3" inputmode="numeric">
+                    <input type="tel" maxlength="1" pattern="[0-9]" class="pin-digit" id="unlock4" inputmode="numeric">
+                </div>
+                <div class="pin-error" id="unlockError"></div>
+                <button class="btn btn-primary" onclick="verifyPIN()">Unlock</button>
+                <button class="btn btn-secondary" onclick="closeUnlockModal()">Cancel</button>
+                <button class="btn btn-secondary" onclick="showForgotPIN()" style="margin-top:10px;">Forgot PIN?</button>
+            </div>
+        </div>
+        
+        <!-- Forgot PIN Modal -->
+        <div class="modal" id="forgotPINModal">
+            <div class="modal-content">
+                <h2>Reset PIN</h2>
+                <div id="securityQuestionStep">
+                    <p><strong>Answer your security question:</strong></p>
+                    <p id="displaySecurityQuestion" style="color:#667eea;font-weight:600;margin:15px 0;"></p>
+                    <input type="text" id="securityAnswerInput" placeholder="Your answer" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;margin-bottom:10px;">
+                    <div class="pin-error" id="securityAnswerError"></div>
+                    <button class="btn btn-primary" onclick="verifySecurityAnswer()">Submit Answer</button>
+                    <button class="btn btn-secondary" onclick="showNuclearReset()">I Don't Remember</button>
+                </div>
+                <div id="nuclearResetStep" style="display:none;">
+                    <p style="color:#e53e3e;font-weight:600;">⚠️ WARNING</p>
+                    <p>This will <strong>DELETE ALL DATA</strong> and reset your PIN.</p>
+                    <p>This action cannot be undone!</p>
+                    <button class="btn btn-danger" onclick="confirmNuclearReset()">Delete Everything & Reset</button>
+                    <button class="btn btn-secondary" onclick="backToSecurityQuestion()">Go Back</button>
+                </div>
+                <button class="btn btn-secondary" onclick="closeForgotPINModal()" style="margin-top:10px;">Cancel</button>
+            </div>
+        </div>
+        
+        <!-- Reset PIN Modal (after successful security question) -->
+        <div class="modal" id="resetPINModal">
+            <div class="modal-content">
+                <h2>Create New PIN</h2>
+                <p>Enter a new 4-digit PIN:</p>
+                <div class="pin-input">
+                    <input type="tel" maxlength="1" pattern="[0-9]" class="pin-digit" id="reset1" inputmode="numeric">
+                    <input type="tel" maxlength="1" pattern="[0-9]" class="pin-digit" id="reset2" inputmode="numeric">
+                    <input type="tel" maxlength="1" pattern="[0-9]" class="pin-digit" id="reset3" inputmode="numeric">
+                    <input type="tel" maxlength="1" pattern="[0-9]" class="pin-digit" id="reset4" inputmode="numeric">
+                </div>
+                <p>Confirm new PIN:</p>
+                <div class="pin-input">
+                    <input type="tel" maxlength="1" pattern="[0-9]" class="pin-digit" id="resetConfirm1" inputmode="numeric">
+                    <input type="tel" maxlength="1" pattern="[0-9]" class="pin-digit" id="resetConfirm2" inputmode="numeric">
+                    <input type="tel" maxlength="1" pattern="[0-9]" class="pin-digit" id="resetConfirm3" inputmode="numeric">
+                    <input type="tel" maxlength="1" pattern="[0-9]" class="pin-digit" id="resetConfirm4" inputmode="numeric">
+                </div>
+                <div class="pin-error" id="resetError"></div>
+                <button class="btn btn-primary" onclick="confirmResetPIN()">Set New PIN</button>
+            </div>
+        </div>
+        
+        <!-- Add/Edit Modal -->
+        <div class="modal" id="formModal">
+            <div class="modal-content">
+                <h2 id="formModalTitle">Add Record</h2>
+                <div id="formModalBody"></div>
+                <div class="form-modal-actions">
+                    <button class="btn btn-primary" onclick="saveFormData()">Save</button>
+                    <button class="btn btn-secondary" onclick="closeFormModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Header -->
+        <div class="header">
+            <h1>🏥 Medical Tracker</h1>
+            <div class="lock-status locked" id="lockStatus">🔒 LOCKED</div>
+            <div class="header-actions">
+                <button class="btn btn-primary" id="lockBtn" onclick="toggleLock()">Unlock</button>
+                <button class="btn btn-secondary" onclick="saveData()">💾 Save</button>
+                <button class="btn btn-secondary" onclick="exportData()">📥 Export</button>
+                <button class="btn btn-secondary" onclick="importData()">📤 Import</button>
+                <button class="btn btn-secondary" onclick="printData()">🖨️ Print</button>
+            </div>
+            <div class="save-status" id="saveStatus"></div>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="showSection('patient')">Patient</button>
+            <button class="tab" onclick="showSection('doctors')">Doctors</button>
+            <button class="tab" onclick="showSection('insurance')">Insurance</button>
+            <button class="tab" onclick="showSection('appointments')">Appointments</button>
+            <button class="tab" onclick="showSection('medications')">Meds</button>
+            <button class="tab" onclick="showSection('allergies')">Allergies</button>
+            <button class="tab" onclick="showSection('vaccines')">Vaccines</button>
+            <button class="tab" onclick="showSection('tests')">Tests</button>
+            <button class="tab" onclick="showSection('surgeries')">Surgeries</button>
+            <button class="tab" onclick="showSection('symptoms')">Symptoms</button>
+            <button class="tab" onclick="showSection('family')">Family</button>
+            <button class="tab" onclick="showSection('disability')">Disability</button>
+            <button class="tab" onclick="showSection('authorizations')">Prior Auth</button>
+        </div>
+        
+        <!-- Content Sections -->
+        <div class="content">
+            <div class="section active" id="patient-section"><h2>Patient Information</h2><div id="patient-content"></div></div>
+            <div class="section" id="doctors-section"><h2>Doctors & Providers</h2><div id="doctors-content"></div></div>
+            <div class="section" id="insurance-section"><h2>Insurance</h2><div id="insurance-content"></div></div>
+            <div class="section" id="appointments-section"><h2>Appointments</h2><div id="appointments-content"></div></div>
+            <div class="section" id="medications-section"><h2>Medications</h2><div id="medications-content"></div></div>
+            <div class="section" id="allergies-section"><h2>Allergies</h2><div id="allergies-content"></div></div>
+            <div class="section" id="vaccines-section"><h2>Vaccines</h2><div id="vaccines-content"></div></div>
+            <div class="section" id="tests-section"><h2>Test Results</h2><div id="tests-content"></div></div>
+            <div class="section" id="surgeries-section"><h2>Surgeries & Procedures</h2><div id="surgeries-content"></div></div>
+            <div class="section" id="symptoms-section"><h2>Symptoms Tracker</h2><div id="symptoms-content"></div></div>
+            <div class="section" id="family-section"><h2>Family History</h2><div id="family-content"></div></div>
+            <div class="section" id="disability-section"><h2>Disability Claims</h2><div id="disability-content"></div></div>
+            <div class="section" id="authorizations-section"><h2>Prior Authorizations</h2><div id="authorizations-content"></div></div>
+        </div>
+    </div>
+    
+    <script>
+        let medicalData = {
+            patient: {fullName:'',dob:'',ssn:'',address:'',city:'',state:'',zip:'',phone:'',email:'',emergencyName:'',emergencyPhone:'',bloodType:'',pharmacyName:'',pharmacyPhone:'',pharmacyAddress:''},
+            doctors: [],
+            insurance: [],
+            appointments: [],
+            medications: [],
+            allergies: [],
+            vaccines: [],
+            tests: [],
+            surgeries: [],
+            symptoms: [],
+            family: [],
+            disability: {employerName:'',employerAddress:'',employerPhone:'',jobTitle:'',dateHired:'',lastDayWorked:'',hoursPerWeek:'',salary:'',jobDuties:'',primaryDiagnosis:'',icd10:'',secondaryDiagnoses:'',symptomsFirstAppeared:'',firstConsultedDoctor:'',unableToWork:'',workRelated:'',treatmentPlan:'',treatingPhysician:'',physicianPhone:'',returnToWorkDate:'',notes:''},
+            authorizations: []
+        };
+        
+        let isLocked = true;
+        let userPIN = '';
+        let securityQuestion = '';
+        let securityAnswer = '';
+        let securityAttempts = 0;
+        let autoSaveInterval;
+        let currentEditSection = '';
+        let currentEditIndex = -1;
+        
+        function init() {
+            loadData();
+            if (userPIN) {
+                document.getElementById('welcomeModal').classList.remove('active');
+                renderAll();
+            }
+            setupPINInputs();
+            startAutoSave();
+        }
+        
+        function setupPIN() {
+            document.getElementById('welcomeModal').classList.remove('active');
+            document.getElementById('pinSetupModal').classList.add('active');
+            setTimeout(() => document.getElementById('setup1').focus(), 100);
+        }
+        
+        function setupPINInputs() {
+            setupPINGroup(['setup1', 'setup2', 'setup3', 'setup4']);
+            setupPINGroup(['confirm1', 'confirm2', 'confirm3', 'confirm4']);
+            setupPINGroup(['unlock1', 'unlock2', 'unlock3', 'unlock4']);
+            setupPINGroup(['reset1', 'reset2', 'reset3', 'reset4']);
+            setupPINGroup(['resetConfirm1', 'resetConfirm2', 'resetConfirm3', 'resetConfirm4']);
+        }
+        
+        function setupPINGroup(ids) {
+            ids.forEach((id, index) => {
+                const input = document.getElementById(id);
+                if (!input) return;
+                
+                input.addEventListener('input', function(e) {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    if (this.value.length === 1 && index < ids.length - 1) {
+                        document.getElementById(ids[index + 1]).focus();
+                    }
+                });
+                
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && !this.value && index > 0) {
+                        document.getElementById(ids[index - 1]).focus();
+                    }
+                });
+                
+                input.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    const paste = (e.clipboardData || window.clipboardData).getData('text');
+                    const digits = paste.replace(/[^0-9]/g, '').split('');
+                    digits.forEach((digit, i) => {
+                        if (index + i < ids.length) {
+                            document.getElementById(ids[index + i]).value = digit;
+                        }
+                    });
+                    if (index + digits.length < ids.length) {
+                        document.getElementById(ids[index + digits.length]).focus();
+                    }
+                });
+            });
+        }
+        
+        function confirmPIN() {
+            const pin1 = ['setup1', 'setup2', 'setup3', 'setup4'].map(id => document.getElementById(id).value).join('');
+            const pin2 = ['confirm1', 'confirm2', 'confirm3', 'confirm4'].map(id => document.getElementById(id).value).join('');
+            
+            if (pin1.length !== 4 || pin2.length !== 4) {
+                showPINError('setupError', 'Please enter 4 digits');
+                return;
+            }
+            
+            if (pin1 !== pin2) {
+                showPINError('setupError', 'PINs do not match');
+                return;
+            }
+            
+            userPIN = pin1;
+            document.getElementById('pinSetupModal').classList.remove('active');
+            document.getElementById('securityQuestionModal').classList.add('active');
+        }
+        
+        function saveSecurityQuestion() {
+            const question = document.getElementById('securityQuestion').value;
+            const answer = document.getElementById('securityAnswer').value.trim().toLowerCase();
+            
+            if (!question) {
+                showPINError('securityError', 'Please select a question');
+                return;
+            }
+            
+            if (!answer) {
+                showPINError('securityError', 'Please provide an answer');
+                return;
+            }
+            
+            securityQuestion = question;
+            securityAnswer = answer;
+            saveData();
+            document.getElementById('securityQuestionModal').classList.remove('active');
+            isLocked = true;
+            renderAll();
+        }
+        
+        function showPINError(errorId, message) {
+            const error = document.getElementById(errorId);
+            error.textContent = message;
+            error.style.display = 'block';
+            setTimeout(() => error.style.display = 'none', 3000);
+        }
+        
+        function toggleLock() {
+            if (isLocked) {
+                document.getElementById('pinUnlockModal').classList.add('active');
+                setTimeout(() => document.getElementById('unlock1').focus(), 100);
+            } else {
+                isLocked = true;
+                updateLockStatus();
+                renderAll();
+            }
+        }
+        
+        function verifyPIN() {
+            const pin = ['unlock1', 'unlock2', 'unlock3', 'unlock4'].map(id => document.getElementById(id).value).join('');
+            
+            if (pin === userPIN) {
+                isLocked = false;
+                document.getElementById('pinUnlockModal').classList.remove('active');
+                updateLockStatus();
+                renderAll();
+                ['unlock1', 'unlock2', 'unlock3', 'unlock4'].forEach(id => {
+                    document.getElementById(id).value = '';
+                });
+                document.getElementById('unlockError').style.display = 'none';
+            } else {
+                showPINError('unlockError', 'Incorrect PIN');
+            }
+        }
+        
+        function closeUnlockModal() {
+            document.getElementById('pinUnlockModal').classList.remove('active');
+            ['unlock1', 'unlock2', 'unlock3', 'unlock4'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            document.getElementById('unlockError').style.display = 'none';
+        }
+        
+        function showForgotPIN() {
+            document.getElementById('pinUnlockModal').classList.remove('active');
+            document.getElementById('forgotPINModal').classList.add('active');
+            document.getElementById('displaySecurityQuestion').textContent = securityQuestion;
+            document.getElementById('securityQuestionStep').style.display = 'block';
+            document.getElementById('nuclearResetStep').style.display = 'none';
+            document.getElementById('securityAnswerInput').value = '';
+            securityAttempts = 0;
+        }
+        
+        function verifySecurityAnswer() {
+            const answer = document.getElementById('securityAnswerInput').value.trim().toLowerCase();
+            
+            if (answer === securityAnswer) {
+                // Correct answer - allow PIN reset
+                document.getElementById('forgotPINModal').classList.remove('active');
+                document.getElementById('resetPINModal').classList.add('active');
+                setTimeout(() => document.getElementById('reset1').focus(), 100);
+            } else {
+                securityAttempts++;
+                if (securityAttempts >= 3) {
+                    showPINError('securityAnswerError', 'Too many attempts. Use "I Don\'t Remember" option.');
+                } else {
+                    showPINError('securityAnswerError', `Incorrect answer. ${3 - securityAttempts} attempts remaining.`);
+                }
+            }
+        }
+        
+        function showNuclearReset() {
+            document.getElementById('securityQuestionStep').style.display = 'none';
+            document.getElementById('nuclearResetStep').style.display = 'block';
+        }
+        
+        function backToSecurityQuestion() {
+            document.getElementById('securityQuestionStep').style.display = 'block';
+            document.getElementById('nuclearResetStep').style.display = 'none';
+        }
+        
+        function confirmNuclearReset() {
+            if (confirm('⚠️ FINAL WARNING: This will permanently delete ALL medical data. Continue?')) {
+                // Reset everything
+                medicalData = {
+                    patient: {fullName:'',dob:'',ssn:'',address:'',city:'',state:'',zip:'',phone:'',email:'',emergencyName:'',emergencyPhone:'',bloodType:'',pharmacyName:'',pharmacyPhone:'',pharmacyAddress:''},
+                    doctors: [],
+                    insurance: [],
+                    appointments: [],
+                    medications: [],
+                    allergies: [],
+                    vaccines: [],
+                    tests: [],
+                    surgeries: [],
+                    symptoms: [],
+                    family: [],
+                    disability: {employerName:'',employerAddress:'',employerPhone:'',jobTitle:'',dateHired:'',lastDayWorked:'',hoursPerWeek:'',salary:'',jobDuties:'',primaryDiagnosis:'',icd10:'',secondaryDiagnoses:'',symptomsFirstAppeared:'',firstConsultedDoctor:'',unableToWork:'',workRelated:'',treatmentPlan:'',treatingPhysician:'',physicianPhone:'',returnToWorkDate:'',notes:''},
+                    authorizations: []
+                };
+                userPIN = '';
+                securityQuestion = '';
+                securityAnswer = '';
+                localStorage.removeItem('medicalTrackerData');
+                
+                // Close modal and show welcome
+                document.getElementById('forgotPINModal').classList.remove('active');
+                document.getElementById('welcomeModal').classList.add('active');
+                alert('✅ All data has been deleted. Please set up a new PIN.');
+            }
+        }
+        
+        function closeForgotPINModal() {
+            document.getElementById('forgotPINModal').classList.remove('active');
+            document.getElementById('securityAnswerInput').value = '';
+            document.getElementById('securityAnswerError').style.display = 'none';
+        }
+        
+        function confirmResetPIN() {
+            const pin1 = ['reset1', 'reset2', 'reset3', 'reset4'].map(id => document.getElementById(id).value).join('');
+            const pin2 = ['resetConfirm1', 'resetConfirm2', 'resetConfirm3', 'resetConfirm4'].map(id => document.getElementById(id).value).join('');
+            
+            if (pin1.length !== 4 || pin2.length !== 4) {
+                showPINError('resetError', 'Please enter 4 digits');
+                return;
+            }
+            
+            if (pin1 !== pin2) {
+                showPINError('resetError', 'PINs do not match');
+                return;
+            }
+            
+            userPIN = pin1;
+            saveData();
+            document.getElementById('resetPINModal').classList.remove('active');
+            alert('✅ PIN successfully reset!');
+            isLocked = true;
+            updateLockStatus();
+            renderAll();
+        }
+        
+        function updateLockStatus() {
+            const status = document.getElementById('lockStatus');
+            const btn = document.getElementById('lockBtn');
+            
+            if (isLocked) {
+                status.textContent = '🔒 LOCKED';
+                status.className = 'lock-status locked';
+                btn.textContent = 'Unlock';
+            } else {
+                status.textContent = '🔓 UNLOCKED';
+                status.className = 'lock-status unlocked';
+                btn.textContent = 'Lock';
+            }
+        }
+        
+        function showSection(sectionName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`${sectionName}-section`).classList.add('active');
+        }
+        
+        function openFormModal(title, section, index = -1) {
+            currentEditSection = section;
+            currentEditIndex = index;
+            document.getElementById('formModalTitle').textContent = title;
+            document.getElementById('formModal').classList.add('active');
+        }
+        
+        function closeFormModal() {
+            document.getElementById('formModal').classList.remove('active');
+            currentEditSection = '';
+            currentEditIndex = -1;
+        }
+        
+        function saveFormData() {
+            closeFormModal();
+        }
+        
+        function renderAll() {
+            renderPatient();
+            renderDoctors();
+            renderInsurance();
+            renderAppointments();
+            renderMedications();
+            renderAllergies();
+            renderVaccines();
+            renderTests();
+            renderSurgeries();
+            renderSymptoms();
+            renderFamily();
+            renderDisability();
+            renderAuthorizations();
+            updateLockStatus();
+        }
+        
+        function renderPatient() {
+            const content = document.getElementById('patient-content');
+            
+            if (isLocked) {
+                content.innerHTML = '<div class="locked-message"><h3>🔒</h3><p>Patient information is locked</p><p>Click "Unlock" to view</p></div>';
+                return;
+            }
+            
+            const p = medicalData.patient;
+            content.innerHTML = `
+                <div class="form-row">
+                    <div class="form-group"><label>Full Legal Name *</label><input type="text" value="${p.fullName}" oninput="updatePatient('fullName', this.value)"></div>
+                    <div class="form-group"><label>Date of Birth *</label><input type="date" value="${p.dob}" oninput="updatePatient('dob', this.value)"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Social Security Number</label><input type="text" value="${p.ssn}" oninput="updatePatient('ssn', this.value)"></div>
+                    <div class="form-group"><label>Blood Type</label><select onchange="updatePatient('bloodType', this.value)">
+                        <option value="">Select</option>
+                        <option ${p.bloodType==='A+'?'selected':''}>A+</option>
+                        <option ${p.bloodType==='A-'?'selected':''}>A-</option>
+                        <option ${p.bloodType==='B+'?'selected':''}>B+</option>
+                        <option ${p.bloodType==='B-'?'selected':''}>B-</option>
+                        <option ${p.bloodType==='AB+'?'selected':''}>AB+</option>
+                        <option ${p.bloodType==='AB-'?'selected':''}>AB-</option>
+                        <option ${p.bloodType==='O+'?'selected':''}>O+</option>
+                        <option ${p.bloodType==='O-'?'selected':''}>O-</option>
+                    </select></div>
+                </div>
+                <div class="form-group"><label>Street Address</label><input type="text" value="${p.address}" oninput="updatePatient('address', this.value)"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>City</label><input type="text" value="${p.city}" oninput="updatePatient('city', this.value)"></div>
+                    <div class="form-group"><label>State</label><input type="text" value="${p.state}" oninput="updatePatient('state', this.value)" maxlength="2"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>ZIP Code</label><input type="text" value="${p.zip}" oninput="updatePatient('zip', this.value)"></div>
+                    <div class="form-group"><label>Phone</label><input type="tel" value="${p.phone}" oninput="updatePatient('phone', this.value)"></div>
+                </div>
+                <div class="form-group"><label>Email</label><input type="email" value="${p.email}" oninput="updatePatient('email', this.value)"></div>
+                <h3>Emergency Contact</h3>
+                <div class="form-row">
+                    <div class="form-group"><label>Name</label><input type="text" value="${p.emergencyName}" oninput="updatePatient('emergencyName', this.value)"></div>
+                    <div class="form-group"><label>Phone</label><input type="tel" value="${p.emergencyPhone}" oninput="updatePatient('emergencyPhone', this.value)"></div>
+                </div>
+                <h3>Preferred Pharmacy</h3>
+                <div class="form-group"><label>Pharmacy Name</label><input type="text" value="${p.pharmacyName}" oninput="updatePatient('pharmacyName', this.value)"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Phone</label><input type="tel" value="${p.pharmacyPhone}" oninput="updatePatient('pharmacyPhone', this.value)"></div>
+                    <div class="form-group"><label>Address</label><input type="text" value="${p.pharmacyAddress}" oninput="updatePatient('pharmacyAddress', this.value)"></div>
+                </div>
+            `;
+        }
+        
+        function updatePatient(field, value) {
+            medicalData.patient[field] = value;
+        }
+        
+        // Due to space constraints, I'm providing a condensed but complete version
+        // All sections follow the same pattern - each has proper forms with detailed fields
+        
+        function renderDoctors() {
+            const content = document.getElementById('doctors-content');
+            if (isLocked) {
+                content.innerHTML = `<div class="locked-message"><h3>🔒</h3><p>${medicalData.doctors.length} records</p></div>`;
+                return;
+            }
+            
+            let html = '<button class="add-record-btn" onclick="showDoctorForm()">➕ Add Doctor</button><div class="records-list">';
+            medicalData.doctors.forEach((doc, i) => {
+                html += `<div class="record-card"><h3>${doc.name||'Unnamed'}</h3><div class="record-detail">`;
+                if(doc.specialty) html += `<div class="record-detail-item"><label>Specialty:</label> ${doc.specialty}</div>`;
+                if(doc.phone) html += `<div class="record-detail-item"><label>Phone:</label> ${doc.phone}</div>`;
+                if(doc.fax) html += `<div class="record-detail-item"><label>Fax:</label> ${doc.fax}</div>`;
+                if(doc.address) html += `<div class="record-detail-item"><label>Address:</label> ${doc.address}${doc.city?', '+doc.city:''}${doc.state?', '+doc.state:''} ${doc.zip||''}</div>`;
+                if(doc.hospital) html += `<div class="record-detail-item"><label>Hospital:</label> ${doc.hospital}</div>`;
+                if(doc.firstVisit) html += `<div class="record-detail-item"><label>First Visit:</label> ${doc.firstVisit}</div>`;
+                html += `</div><div class="record-actions"><button class="edit-btn" onclick="showDoctorForm(${i})">✏️ Edit</button><button class="delete-btn" onclick="deleteRecord('doctors',${i})">🗑️ Delete</button></div></div>`;
+            });
+            content.innerHTML = html + '</div>';
+        }
+        
+        function showDoctorForm(index = -1) {
+            const isEdit = index >= 0;
+            const doc = isEdit ? medicalData.doctors[index] : {};
+            openFormModal(isEdit ? 'Edit Doctor' : 'Add Doctor', 'doctors', index);
+            
+            document.getElementById('formModalBody').innerHTML = `
+                <div class="form-group"><label>Doctor Name *</label><input type="text" id="f_name" value="${doc.name||''}" placeholder="Dr. Smith"></div>
+                <div class="form-group"><label>Specialty</label><input type="text" id="f_specialty" value="${doc.specialty||''}"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Phone</label><input type="tel" id="f_phone" value="${doc.phone||''}"></div>
+                    <div class="form-group"><label>Fax</label><input type="tel" id="f_fax" value="${doc.fax||''}"></div>
+                </div>
+                <div class="form-group"><label>Address</label><input type="text" id="f_address" value="${doc.address||''}"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>City</label><input type="text" id="f_city" value="${doc.city||''}"></div>
+                    <div class="form-group"><label>State</label><input type="text" id="f_state" value="${doc.state||''}" maxlength="2"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>ZIP</label><input type="text" id="f_zip" value="${doc.zip||''}"></div>
+                    <div class="form-group"><label>Hospital Affiliation</label><input type="text" id="f_hospital" value="${doc.hospital||''}"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>First Visit Date</label><input type="date" id="f_firstVisit" value="${doc.firstVisit||''}"></div>
+                    <div class="form-group"><label>Last Visit</label><input type="date" id="f_lastVisit" value="${doc.lastVisit||''}"></div>
+                </div>
+                <div class="form-group"><label>Next Appointment</label><input type="date" id="f_nextAppt" value="${doc.nextAppt||''}"></div>
+                <div class="form-group"><label>Notes</label><textarea id="f_notes">${doc.notes||''}</textarea></div>
+            `;
+            
+            saveFormData = function() {
+                const name = document.getElementById('f_name').value.trim();
+                if (!name) { alert('Name required'); return; }
+                
+                const data = {
+                    name, specialty: document.getElementById('f_specialty').value.trim(),
+                    phone: document.getElementById('f_phone').value.trim(), fax: document.getElementById('f_fax').value.trim(),
+                    address: document.getElementById('f_address').value.trim(), city: document.getElementById('f_city').value.trim(),
+                    state: document.getElementById('f_state').value.trim().toUpperCase(), zip: document.getElementById('f_zip').value.trim(),
+                    hospital: document.getElementById('f_hospital').value.trim(), firstVisit: document.getElementById('f_firstVisit').value,
+                    lastVisit: document.getElementById('f_lastVisit').value, nextAppt: document.getElementById('f_nextAppt').value,
+                    notes: document.getElementById('f_notes').value.trim()
+                };
+                
+                if (isEdit) medicalData.doctors[index] = data;
+                else medicalData.doctors.push(data);
+                saveData(); renderDoctors(); closeFormModal();
+            };
+        }
+        
+        function renderInsurance() {
+            const content = document.getElementById('insurance-content');
+            if (isLocked) {
+                content.innerHTML = `<div class="locked-message"><h3>🔒</h3><p>${medicalData.insurance.length} records</p></div>`;
+                return;
+            }
+            
+            let html = '<button class="add-record-btn" onclick="showInsuranceTypeSelect()">➕ Add Insurance</button><div class="records-list">';
+            medicalData.insurance.forEach((ins, i) => {
+                html += `<div class="record-card"><h3>${ins.company||'Unnamed'}<span class="insurance-type-badge">${ins.type}</span></h3><div class="record-detail">`;
+                if(ins.phone) html += `<div class="record-detail-item"><label>Phone:</label> ${ins.phone}</div>`;
+                if(ins.policyId) html += `<div class="record-detail-item"><label>Policy ID:</label> ${ins.policyId}</div>`;
+                if(ins.contactPerson) html += `<div class="record-detail-item"><label>Contact:</label> ${ins.contactPerson}</div>`;
+                html += `</div><div class="record-actions"><button class="edit-btn" onclick="showInsuranceForm(${i})">✏️ Edit</button><button class="delete-btn" onclick="deleteRecord('insurance',${i})">🗑️ Delete</button></div></div>`;
+            });
+            content.innerHTML = html + '</div>';
+        }
+        
+        function showInsuranceTypeSelect() {
+            openFormModal('Select Insurance Type', 'insurance', -1);
+            document.getElementById('formModalBody').innerHTML = `
+                <div class="form-group"><label>What type?</label><select id="insuranceType" style="font-size:16px;padding:15px;">
+                    <option value="">-- Select --</option>
+                    <option value="Medical">Medical</option>
+                    <option value="Prescription">Prescription</option>
+                    <option value="Home">Home/Renters</option>
+                    <option value="Auto">Auto</option>
+                    <option value="Life">Life</option>
+                    <option value="Disability">Disability</option>
+                    <option value="Dental">Dental</option>
+                    <option value="Vision">Vision</option>
+                    <option value="Other">Other</option>
+                </select></div>
+            `;
+            saveFormData = function() {
+                const type = document.getElementById('insuranceType').value;
+                if (!type) { alert('Select type'); return; }
+                closeFormModal();
+                setTimeout(() => showInsuranceForm(-1, type), 100);
+            };
+        }
+        
+        function showInsuranceForm(index = -1, type = null) {
+            const isEdit = index >= 0;
+            const ins = isEdit ? medicalData.insurance[index] : { type: type || 'Medical' };
+            const insuranceType = ins.type;
+            openFormModal(isEdit ? `Edit ${insuranceType} Insurance` : `Add ${insuranceType} Insurance`, 'insurance', index);
+            
+            let formHTML = `<input type="hidden" id="insuranceType" value="${insuranceType}">
+                <div class="form-group"><label>Company Name *</label><input type="text" id="f_company" value="${ins.company||''}"></div>
+                <div class="form-group"><label>Phone</label><input type="tel" id="f_phone" value="${ins.phone||''}"></div>`;
+            
+            if (['Medical','Dental','Vision'].includes(insuranceType)) {
+                formHTML += `<div class="form-row">
+                    <div class="form-group"><label>Policy/Member ID</label><input type="text" id="f_policyId" value="${ins.policyId||''}"></div>
+                    <div class="form-group"><label>Group Number</label><input type="text" id="f_groupNum" value="${ins.groupNum||''}"></div>
+                </div>`;
+            }
+            
+            if (insuranceType === 'Prescription') {
+                formHTML += `<div class="form-row">
+                    <div class="form-group"><label>RxBin</label><input type="text" id="f_rxbin" value="${ins.rxbin||''}"></div>
+                    <div class="form-group"><label>RxPCN</label><input type="text" id="f_rxpcn" value="${ins.rxpcn||''}"></div>
+                </div>`;
+            }
+            
+            if (['Home','Auto','Life','Disability','Other'].includes(insuranceType)) {
+                formHTML += `<div class="form-group"><label>Policy Number</label><input type="text" id="f_policyNum" value="${ins.policyNum||''}"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Contact Person</label><input type="text" id="f_contactPerson" value="${ins.contactPerson||''}"></div>
+                    <div class="form-group"><label>Contact Phone</label><input type="tel" id="f_contactPhone" value="${ins.contactPhone||''}"></div>
+                </div>`;
+            }
+            
+            formHTML += `<div class="form-group"><label>Notes</label><textarea id="f_notes">${ins.notes||''}</textarea></div>`;
+            document.getElementById('formModalBody').innerHTML = formHTML;
+            
+            saveFormData = function() {
+                const company = document.getElementById('f_company').value.trim();
+                if (!company) { alert('Company name required'); return; }
+                
+                const data = { type: insuranceType, company, phone: document.getElementById('f_phone').value.trim() };
+                if (['Medical','Dental','Vision'].includes(insuranceType)) {
+                    data.policyId = document.getElementById('f_policyId')?.value.trim()||'';
+                    data.groupNum = document.getElementById('f_groupNum')?.value.trim()||'';
+                }
+                if (insuranceType === 'Prescription') {
+                    data.rxbin = document.getElementById('f_rxbin')?.value.trim()||'';
+                    data.rxpcn = document.getElementById('f_rxpcn')?.value.trim()||'';
+                }
+                if (['Home','Auto','Life','Disability','Other'].includes(insuranceType)) {
+                    data.policyNum = document.getElementById('f_policyNum')?.value.trim()||'';
+                    data.contactPerson = document.getElementById('f_contactPerson')?.value.trim()||'';
+                    data.contactPhone = document.getElementById('f_contactPhone')?.value.trim()||'';
+                }
+                data.notes = document.getElementById('f_notes')?.value.trim()||'';
+                
+                if (isEdit) medicalData.insurance[index] = data;
+                else medicalData.insurance.push(data);
+                saveData(); renderInsurance(); closeFormModal();
+            };
+        }
+        
+        // COMPLETE FORMS FOR REMAINING SECTIONS (condensed for space)
+        
+        function renderAppointments() {
+            const content = document.getElementById('appointments-content');
+            if (isLocked) {
+                content.innerHTML = `<div class="locked-message"><h3>🔒</h3><p>${medicalData.appointments.length} records</p></div>`;
+                return;
+            }
+            let html = '<button class="add-record-btn" onclick="showAppointmentForm()">➕ Add Appointment</button><div class="records-list">';
+            medicalData.appointments.forEach((apt, i) => {
+                html += `<div class="record-card"><h3>${apt.date||'No Date'} - ${apt.doctor||'No Doctor'}</h3><div class="record-detail">`;
+                if(apt.reason) html += `<div class="record-detail-item"><label>Reason:</label> ${apt.reason}</div>`;
+                if(apt.outcome) html += `<div class="record-detail-item"><label>Outcome:</label> ${apt.outcome}</div>`;
+                html += `</div><div class="record-actions"><button class="edit-btn" onclick="showAppointmentForm(${i})">✏️ Edit</button><button class="delete-btn" onclick="deleteRecord('appointments',${i})">🗑️ Delete</button></div></div>`;
+            });
+            content.innerHTML = html + '</div>';
+        }
+        
+        function showAppointmentForm(index = -1) {
+            const isEdit = index >= 0;
+            const apt = isEdit ? medicalData.appointments[index] : {};
+            openFormModal(isEdit ? 'Edit Appointment' : 'Add Appointment', 'appointments', index);
+            document.getElementById('formModalBody').innerHTML = `
+                <div class="form-row">
+                    <div class="form-group"><label>Date *</label><input type="date" id="f_date" value="${apt.date||''}"></div>
+                    <div class="form-group"><label>Time</label><input type="time" id="f_time" value="${apt.time||''}"></div>
+                </div>
+                <div class="form-group"><label>Doctor *</label><input type="text" id="f_doctor" value="${apt.doctor||''}"></div>
+                <div class="form-group"><label>Reason for Visit</label><textarea id="f_reason">${apt.reason||''}</textarea></div>
+                <div class="form-group"><label>Outcome/Notes</label><textarea id="f_outcome">${apt.outcome||''}</textarea></div>
+                <div class="form-group"><label>Follow-up Required?</label><select id="f_followUp">
+                    <option value="">N/A</option>
+                    <option ${apt.followUp==='Yes'?'selected':''}>Yes</option>
+                    <option ${apt.followUp==='No'?'selected':''}>No</option>
+                </select></div>
+                <div class="form-group"><label>Follow-up Date</label><input type="date" id="f_followUpDate" value="${apt.followUpDate||''}"></div>
+                <div class="form-group"><label>Prescriptions Given</label><textarea id="f_prescriptions">${apt.prescriptions||''}</textarea></div>
+                <div class="form-group"><label>Tests Ordered</label><textarea id="f_tests">${apt.testsOrdered||''}</textarea></div>
+            `;
+            saveFormData = function() {
+                const date = document.getElementById('f_date').value;
+                const doctor = document.getElementById('f_doctor').value.trim();
+                if (!date || !doctor) { alert('Date and doctor required'); return; }
+                const data = {date, doctor, time: document.getElementById('f_time').value, reason: document.getElementById('f_reason').value.trim(),
+                    outcome: document.getElementById('f_outcome').value.trim(), followUp: document.getElementById('f_followUp').value,
+                    followUpDate: document.getElementById('f_followUpDate').value, prescriptions: document.getElementById('f_prescriptions').value.trim(),
+                    testsOrdered: document.getElementById('f_tests').value.trim()};
+                if (isEdit) medicalData.appointments[index] = data;
+                else medicalData.appointments.push(data);
+                saveData(); renderAppointments(); closeFormModal();
+            };
+        }
+        
+        function renderMedications() {
+            const content = document.getElementById('medications-content');
+            if (isLocked) {
+                content.innerHTML = `<div class="locked-message"><h3>🔒</h3><p>${medicalData.medications.length} records</p></div>`;
+                return;
+            }
+            let html = '<button class="add-record-btn" onclick="showMedicationForm()">➕ Add Medication</button><div class="records-list">';
+            medicalData.medications.forEach((med, i) => {
+                html += `<div class="record-card"><h3>${med.name||'Unnamed'}</h3><div class="record-detail">`;
+                if(med.dosage) html += `<div class="record-detail-item"><label>Dosage:</label> ${med.dosage}</div>`;
+                if(med.frequency) html += `<div class="record-detail-item"><label>Frequency:</label> ${med.frequency}</div>`;
+                if(med.purpose) html += `<div class="record-detail-item"><label>Purpose:</label> ${med.purpose}</div>`;
+                html += `</div><div class="record-actions"><button class="edit-btn" onclick="showMedicationForm(${i})">✏️ Edit</button><button class="delete-btn" onclick="deleteRecord('medications',${i})">🗑️ Delete</button></div></div>`;
+            });
+            content.innerHTML = html + '</div>';
+        }
+        
+        function showMedicationForm(index = -1) {
+            const isEdit = index >= 0;
+            const med = isEdit ? medicalData.medications[index] : {};
+            openFormModal(isEdit ? 'Edit Medication' : 'Add Medication', 'medications', index);
+            document.getElementById('formModalBody').innerHTML = `
+                <div class="form-group"><label>Medication Name *</label><input type="text" id="f_name" value="${med.name||''}"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Dosage & Strength</label><input type="text" id="f_dosage" value="${med.dosage||''}"></div>
+                    <div class="form-group"><label>Form</label><select id="f_form">
+                        <option value="">Select</option>
+                        <option ${med.form==='Tablet'?'selected':''}>Tablet</option>
+                        <option ${med.form==='Capsule'?'selected':''}>Capsule</option>
+                        <option ${med.form==='Liquid'?'selected':''}>Liquid</option>
+                        <option ${med.form==='Injection'?'selected':''}>Injection</option>
+                        <option ${med.form==='Topical'?'selected':''}>Topical</option>
+                        <option ${med.form==='Other'?'selected':''}>Other</option>
+                    </select></div>
+                </div>
+                <div class="form-group"><label>Frequency</label><input type="text" id="f_frequency" value="${med.frequency||''}" placeholder="e.g., twice daily"></div>
+                <div class="form-group"><label>Prescribing Doctor</label><input type="text" id="f_doctor" value="${med.doctor||''}"></div>
+                <div class="form-group"><label>Pharmacy</label><input type="text" id="f_pharmacy" value="${med.pharmacy||''}"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Start Date</label><input type="date" id="f_startDate" value="${med.startDate||''}"></div>
+                    <div class="form-group"><label>End Date</label><input type="date" id="f_endDate" value="${med.endDate||''}"></div>
+                </div>
+                <div class="form-group"><label>Refills Remaining</label><input type="number" id="f_refills" value="${med.refills||''}" min="0"></div>
+                <div class="form-group"><label>Purpose/Why Prescribed</label><textarea id="f_purpose">${med.purpose||''}</textarea></div>
+                <div class="form-group"><label>Side Effects Experienced</label><textarea id="f_sideEffects">${med.sideEffects||''}</textarea></div>
+                <div class="form-group"><label>Notes</label><textarea id="f_notes">${med.notes||''}</textarea></div>
+            `;
+            saveFormData = function() {
+                const name = document.getElementById('f_name').value.trim();
+                if (!name) { alert('Medication name required'); return; }
+                const data = {name, dosage: document.getElementById('f_dosage').value.trim(), form: document.getElementById('f_form').value,
+                    frequency: document.getElementById('f_frequency').value.trim(), doctor: document.getElementById('f_doctor').value.trim(),
+                    pharmacy: document.getElementById('f_pharmacy').value.trim(), startDate: document.getElementById('f_startDate').value,
+                    endDate: document.getElementById('f_endDate').value, refills: document.getElementById('f_refills').value,
+                    purpose: document.getElementById('f_purpose').value.trim(), sideEffects: document.getElementById('f_sideEffects').value.trim(),
+                    notes: document.getElementById('f_notes').value.trim()};
+                if (isEdit) medicalData.medications[index] = data;
+                else medicalData.medications.push(data);
+                saveData(); renderMedications(); closeFormModal();
+            };
+        }
+        
+        // Continuing with remaining sections (space-optimized)
+        function renderAllergies() {
+            const content = document.getElementById('allergies-content');
+            if (isLocked) {
+                content.innerHTML = `<div class="locked-message"><h3>🔒</h3><p>${medicalData.allergies.length} records</p></div>`;
+                return;
+            }
+            let html = '<button class="add-record-btn" onclick="showAllergyForm()">➕ Add Allergy</button><div class="records-list">';
+            medicalData.allergies.forEach((a, i) => {
+                html += `<div class="record-card"><h3>${a.allergen||'Unnamed'}</h3><div class="record-detail">`;
+                if(a.type) html += `<div class="record-detail-item"><label>Type:</label> ${a.type}</div>`;
+                if(a.reaction) html += `<div class="record-detail-item"><label>Reaction:</label> ${a.reaction}</div>`;
+                if(a.severity) html += `<div class="record-detail-item"><label>Severity:</label> ${a.severity}</div>`;
+                html += `</div><div class="record-actions"><button class="edit-btn" onclick="showAllergyForm(${i})">✏️ Edit</button><button class="delete-btn" onclick="deleteRecord('allergies',${i})">🗑️ Delete</button></div></div>`;
+            });
+            content.innerHTML = html + '</div>';
+        }
+        
+        function showAllergyForm(index = -1) {
+            const isEdit = index >= 0;
+            const a = isEdit ? medicalData.allergies[index] : {};
+            openFormModal(isEdit ? 'Edit Allergy' : 'Add Allergy', 'allergies', index);
+            document.getElementById('formModalBody').innerHTML = `
+                <div class="form-group"><label>Allergen *</label><input type="text" id="f_allergen" value="${a.allergen||''}" placeholder="Medication, food, substance"></div>
+                <div class="form-group"><label>Type</label><select id="f_type">
+                    <option value="">Select</option>
+                    <option ${a.type==='Medication'?'selected':''}>Medication</option>
+                    <option ${a.type==='Food'?'selected':''}>Food</option>
+                    <option ${a.type==='Environmental'?'selected':''}>Environmental</option>
+                    <option ${a.type==='Other'?'selected':''}>Other</option>
+                </select></div>
+                <div class="form-group"><label>Reaction/Symptoms</label><textarea id="f_reaction">${a.reaction||''}</textarea></div>
+                <div class="form-group"><label>Severity</label><select id="f_severity">
+                    <option value="">Select</option>
+                    <option ${a.severity==='Mild'?'selected':''}>Mild</option>
+                    <option ${a.severity==='Moderate'?'selected':''}>Moderate</option>
+                    <option ${a.severity==='Severe'?'selected':''}>Severe</option>
+                    <option ${a.severity==='Life-threatening'?'selected':''}>Life-threatening</option>
+                </select></div>
+                <div class="form-group"><label>Date Discovered</label><input type="date" id="f_date" value="${a.dateDiscovered||''}"></div>
+                <div class="form-group"><label>Notes</label><textarea id="f_notes">${a.notes||''}</textarea></div>
+            `;
+            saveFormData = function() {
+                const allergen = document.getElementById('f_allergen').value.trim();
+                if (!allergen) { alert('Allergen required'); return; }
+                const data = {allergen, type: document.getElementById('f_type').value, reaction: document.getElementById('f_reaction').value.trim(),
+                    severity: document.getElementById('f_severity').value, dateDiscovered: document.getElementById('f_date').value,
+                    notes: document.getElementById('f_notes').value.trim()};
+                if (isEdit) medicalData.allergies[index] = data;
+                else medicalData.allergies.push(data);
+                saveData(); renderAllergies(); closeFormModal();
+            };
+        }
+        
+        function renderVaccines() {
+            const content = document.getElementById('vaccines-content');
+            if (isLocked) {
+                content.innerHTML = `<div class="locked-message"><h3>🔒</h3><p>${medicalData.vaccines.length} records</p></div>`;
+                return;
+            }
+            let html = '<button class="add-record-btn" onclick="showVaccineForm()">➕ Add Vaccine</button><div class="records-list">';
+            medicalData.vaccines.forEach((v, i) => {
+                html += `<div class="record-card"><h3>${v.name||'Unnamed'}</h3><div class="record-detail">`;
+                if(v.date) html += `<div class="record-detail-item"><label>Date:</label> ${v.date}</div>`;
+                if(v.provider) html += `<div class="record-detail-item"><label>Provider:</label> ${v.provider}</div>`;
+                if(v.nextDose) html += `<div class="record-detail-item"><label>Next Dose:</label> ${v.nextDose}</div>`;
+                html += `</div><div class="record-actions"><button class="edit-btn" onclick="showVaccineForm(${i})">✏️ Edit</button><button class="delete-btn" onclick="deleteRecord('vaccines',${i})">🗑️ Delete</button></div></div>`;
+            });
+            content.innerHTML = html + '</div>';
+        }
+        
+        function showVaccineForm(index = -1) {
+            const isEdit = index >= 0;
+            const v = isEdit ? medicalData.vaccines[index] : {};
+            openFormModal(isEdit ? 'Edit Vaccine' : 'Add Vaccine', 'vaccines', index);
+            document.getElementById('formModalBody').innerHTML = `
+                <div class="form-group"><label>Vaccine Name *</label><input type="text" id="f_name" value="${v.name||''}"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Date Administered</label><input type="date" id="f_date" value="${v.date||''}"></div>
+                    <div class="form-group"><label>Provider</label><input type="text" id="f_provider" value="${v.provider||''}"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Lot Number</label><input type="text" id="f_lot" value="${v.lotNumber||''}"></div>
+                    <div class="form-group"><label>Next Dose Due</label><input type="date" id="f_nextDose" value="${v.nextDose||''}"></div>
+                </div>
+                <div class="form-group"><label>Reaction (if any)</label><textarea id="f_reaction">${v.reaction||''}</textarea></div>
+            `;
+            saveFormData = function() {
+                const name = document.getElementById('f_name').value.trim();
+                if (!name) { alert('Vaccine name required'); return; }
+                const data = {name, date: document.getElementById('f_date').value, provider: document.getElementById('f_provider').value.trim(),
+                    lotNumber: document.getElementById('f_lot').value.trim(), nextDose: document.getElementById('f_nextDose').value,
+                    reaction: document.getElementById('f_reaction').value.trim()};
+                if (isEdit) medicalData.vaccines[index] = data;
+                else medicalData.vaccines.push(data);
+                saveData(); renderVaccines(); closeFormModal();
+            };
+        }
+        
+        function renderTests() {
+            const content = document.getElementById('tests-content');
+            if (isLocked) {
+                content.innerHTML = `<div class="locked-message"><h3>🔒</h3><p>${medicalData.tests.length} records</p></div>`;
+                return;
+            }
+            let html = '<button class="add-record-btn" onclick="showTestForm()">➕ Add Test Result</button><div class="records-list">';
+            medicalData.tests.forEach((t, i) => {
+                html += `<div class="record-card"><h3>${t.type||'Unnamed'}</h3><div class="record-detail">`;
+                if(t.date) html += `<div class="record-detail-item"><label>Date:</label> ${t.date}</div>`;
+                if(t.doctor) html += `<div class="record-detail-item"><label>Ordering Doctor:</label> ${t.doctor}</div>`;
+                if(t.results) html += `<div class="record-detail-item"><label>Results:</label> ${t.results}</div>`;
+                html += `</div><div class="record-actions"><button class="edit-btn" onclick="showTestForm(${i})">✏️ Edit</button><button class="delete-btn" onclick="deleteRecord('tests',${i})">🗑️ Delete</button></div></div>`;
+            });
+            content.innerHTML = html + '</div>';
+        }
+        
+        function showTestForm(index = -1) {
+            const isEdit = index >= 0;
+            const t = isEdit ? medicalData.tests[index] : {};
+            openFormModal(isEdit ? 'Edit Test Result' : 'Add Test Result', 'tests', index);
+            document.getElementById('formModalBody').innerHTML = `
+                <div class="form-group"><label>Test Type *</label><input type="text" id="f_type" value="${t.type||''}" placeholder="Blood work, X-ray, MRI, etc."></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Date Performed</label><input type="date" id="f_date" value="${t.date||''}"></div>
+                    <div class="form-group"><label>Ordering Doctor</label><input type="text" id="f_doctor" value="${t.doctor||''}"></div>
+                </div>
+                <div class="form-group"><label>Lab/Facility Name</label><input type="text" id="f_facility" value="${t.facility||''}"></div>
+                <div class="form-group"><label>Results Summary</label><textarea id="f_results">${t.results||''}</textarea></div>
+                <div class="form-group"><label>Abnormal Findings</label><textarea id="f_abnormal">${t.abnormal||''}</textarea></div>
+                <div class="form-group"><label>Follow-up Required?</label><select id="f_followUp">
+                    <option value="">N/A</option>
+                    <option ${t.followUp==='Yes'?'selected':''}>Yes</option>
+                    <option ${t.followUp==='No'?'selected':''}>No</option>
+                </select></div>
+                <div class="form-group"><label>Notes</label><textarea id="f_notes">${t.notes||''}</textarea></div>
+            `;
+            saveFormData = function() {
+                const type = document.getElementById('f_type').value.trim();
+                if (!type) { alert('Test type required'); return; }
+                const data = {type, date: document.getElementById('f_date').value, doctor: document.getElementById('f_doctor').value.trim(),
+                    facility: document.getElementById('f_facility').value.trim(), results: document.getElementById('f_results').value.trim(),
+                    abnormal: document.getElementById('f_abnormal').value.trim(), followUp: document.getElementById('f_followUp').value,
+                    notes: document.getElementById('f_notes').value.trim()};
+                if (isEdit) medicalData.tests[index] = data;
+                else medicalData.tests.push(data);
+                saveData(); renderTests(); closeFormModal();
+            };
+        }
+        
+        function renderSurgeries() {
+            const content = document.getElementById('surgeries-content');
+            if (isLocked) {
+                content.innerHTML = `<div class="locked-message"><h3>🔒</h3><p>${medicalData.surgeries.length} records</p></div>`;
+                return;
+            }
+            let html = '<button class="add-record-btn" onclick="showSurgeryForm()">➕ Add Surgery/Procedure</button><div class="records-list">';
+            medicalData.surgeries.forEach((s, i) => {
+                html += `<div class="record-card"><h3>${s.name||'Unnamed'}</h3><div class="record-detail">`;
+                if(s.date) html += `<div class="record-detail-item"><label>Date:</label> ${s.date}</div>`;
+                if(s.surgeon) html += `<div class="record-detail-item"><label>Surgeon:</label> ${s.surgeon}</div>`;
+                if(s.hospital) html += `<div class="record-detail-item"><label>Hospital:</label> ${s.hospital}</div>`;
+                html += `</div><div class="record-actions"><button class="edit-btn" onclick="showSurgeryForm(${i})">✏️ Edit</button><button class="delete-btn" onclick="deleteRecord('surgeries',${i})">🗑️ Delete</button></div></div>`;
+            });
+            content.innerHTML = html + '</div>';
+        }
+        
+        function showSurgeryForm(index = -1) {
+            const isEdit = index >= 0;
+            const s = isEdit ? medicalData.surgeries[index] : {};
+            openFormModal(isEdit ? 'Edit Surgery' : 'Add Surgery/Procedure', 'surgeries', index);
+            document.getElementById('formModalBody').innerHTML = `
+                <div class="form-group"><label>Procedure Name *</label><input type="text" id="f_name" value="${s.name||''}"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Date Performed</label><input type="date" id="f_date" value="${s.date||''}"></div>
+                    <div class="form-group"><label>Surgeon/Doctor</label><input type="text" id="f_surgeon" value="${s.surgeon||''}"></div>
+                </div>
+                <div class="form-group"><label>Hospital/Facility</label><input type="text" id="f_hospital" value="${s.hospital||''}"></div>
+                <div class="form-group"><label>Reason for Procedure</label><textarea id="f_reason">${s.reason||''}</textarea></div>
+                <div class="form-group"><label>Outcome/Complications</label><textarea id="f_outcome">${s.outcome||''}</textarea></div>
+                <div class="form-group"><label>Recovery Notes</label><textarea id="f_recovery">${s.recovery||''}</textarea></div>
+                <div class="form-group"><label>Follow-up Care</label><textarea id="f_followUp">${s.followUp||''}</textarea></div>
+            `;
+            saveFormData = function() {
+                const name = document.getElementById('f_name').value.trim();
+                if (!name) { alert('Procedure name required'); return; }
+                const data = {name, date: document.getElementById('f_date').value, surgeon: document.getElementById('f_surgeon').value.trim(),
+                    hospital: document.getElementById('f_hospital').value.trim(), reason: document.getElementById('f_reason').value.trim(),
+                    outcome: document.getElementById('f_outcome').value.trim(), recovery: document.getElementById('f_recovery').value.trim(),
+                    followUp: document.getElementById('f_followUp').value.trim()};
+                if (isEdit) medicalData.surgeries[index] = data;
+                else medicalData.surgeries.push(data);
+                saveData(); renderSurgeries(); closeFormModal();
+            };
+        }
+        
+        function renderSymptoms() {
+            const content = document.getElementById('symptoms-content');
+            if (isLocked) {
+                content.innerHTML = `<div class="locked-message"><h3>🔒</h3><p>${medicalData.symptoms.length} records</p></div>`;
+                return;
+            }
+            let html = '<button class="add-record-btn" onclick="showSymptomForm()">➕ Add Symptom</button><div class="records-list">';
+            medicalData.symptoms.forEach((s, i) => {
+                html += `<div class="record-card"><h3>${s.description||'Unnamed'}</h3><div class="record-detail">`;
+                if(s.firstNoticed) html += `<div class="record-detail-item"><label>First Noticed:</label> ${s.firstNoticed}</div>`;
+                if(s.frequency) html += `<div class="record-detail-item"><label>Frequency:</label> ${s.frequency}</div>`;
+                if(s.severity) html += `<div class="record-detail-item"><label>Severity:</label> ${s.severity}/10</div>`;
+                html += `</div><div class="record-actions"><button class="edit-btn" onclick="showSymptomForm(${i})">✏️ Edit</button><button class="delete-btn" onclick="deleteRecord('symptoms',${i})">🗑️ Delete</button></div></div>`;
+            });
+            content.innerHTML = html + '</div>';
+        }
+        
+        function showSymptomForm(index = -1) {
+            const isEdit = index >= 0;
+            const s = isEdit ? medicalData.symptoms[index] : {};
+            openFormModal(isEdit ? 'Edit Symptom' : 'Add Symptom', 'symptoms', index);
+            document.getElementById('formModalBody').innerHTML = `
+                <div class="form-group"><label>Symptom Description *</label><textarea id="f_description">${s.description||''}</textarea></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Date First Noticed</label><input type="date" id="f_firstNoticed" value="${s.firstNoticed||''}"></div>
+                    <div class="form-group"><label>Reported to Doctor</label><input type="date" id="f_reportedToDoctor" value="${s.reportedToDoctor||''}"></div>
+                </div>
+                <div class="form-group"><label>Frequency</label><select id="f_frequency">
+                    <option value="">Select</option>
+                    <option ${s.frequency==='Constant'?'selected':''}>Constant</option>
+                    <option ${s.frequency==='Daily'?'selected':''}>Daily</option>
+                    <option ${s.frequency==='Weekly'?'selected':''}>Weekly</option>
+                    <option ${s.frequency==='Occasional'?'selected':''}>Occasional</option>
+                </select></div>
+                <div class="form-group"><label>Severity (1-10)</label><input type="number" id="f_severity" value="${s.severity||''}" min="1" max="10"></div>
+                <div class="form-group"><label>What Triggers It</label><textarea id="f_triggers">${s.triggers||''}</textarea></div>
+                <div class="form-group"><label>What Relieves It</label><textarea id="f_relieves">${s.relieves||''}</textarea></div>
+                <div class="form-group"><label>Daily Impact</label><textarea id="f_dailyImpact">${s.dailyImpact||''}</textarea></div>
+                <div class="form-group"><label>Associated Doctor/Diagnosis</label><input type="text" id="f_doctor" value="${s.doctor||''}"></div>
+            `;
+            saveFormData = function() {
+                const description = document.getElementById('f_description').value.trim();
+                if (!description) { alert('Description required'); return; }
+                const data = {description, firstNoticed: document.getElementById('f_firstNoticed').value,
+                    reportedToDoctor: document.getElementById('f_reportedToDoctor').value, frequency: document.getElementById('f_frequency').value,
+                    severity: document.getElementById('f_severity').value, triggers: document.getElementById('f_triggers').value.trim(),
+                    relieves: document.getElementById('f_relieves').value.trim(), dailyImpact: document.getElementById('f_dailyImpact').value.trim(),
+                    doctor: document.getElementById('f_doctor').value.trim()};
+                if (isEdit) medicalData.symptoms[index] = data;
+                else medicalData.symptoms.push(data);
+                saveData(); renderSymptoms(); closeFormModal();
+            };
+        }
+        
+        function renderFamily() {
+            const content = document.getElementById('family-content');
+            if (isLocked) {
+                content.innerHTML = `<div class="locked-message"><h3>🔒</h3><p>${medicalData.family.length} records</p></div>`;
+                return;
+            }
+            let html = '<button class="add-record-btn" onclick="showFamilyForm()">➕ Add Family History</button><div class="records-list">';
+            medicalData.family.forEach((f, i) => {
+                html += `<div class="record-card"><h3>${f.relation||'Unknown'} - ${f.condition||'No Condition'}</h3><div class="record-detail">`;
+                if(f.age) html += `<div class="record-detail-item"><label>Age at Diagnosis:</label> ${f.age}</div>`;
+                if(f.status) html += `<div class="record-detail-item"><label>Status:</label> ${f.status}</div>`;
+                html += `</div><div class="record-actions"><button class="edit-btn" onclick="showFamilyForm(${i})">✏️ Edit</button><button class="delete-btn" onclick="deleteRecord('family',${i})">🗑️ Delete</button></div></div>`;
+            });
+            content.innerHTML = html + '</div>';
+        }
+        
+        function showFamilyForm(index = -1) {
+            const isEdit = index >= 0;
+            const f = isEdit ? medicalData.family[index] : {};
+            openFormModal(isEdit ? 'Edit Family History' : 'Add Family History', 'family', index);
+            document.getElementById('formModalBody').innerHTML = `
+                <div class="form-group"><label>Family Member *</label><select id="f_relation">
+                    <option value="">Select</option>
+                    <option ${f.relation==='Mother'?'selected':''}>Mother</option>
+                    <option ${f.relation==='Father'?'selected':''}>Father</option>
+                    <option ${f.relation==='Sibling'?'selected':''}>Sibling</option>
+                    <option ${f.relation==='Grandparent'?'selected':''}>Grandparent</option>
+                    <option ${f.relation==='Aunt/Uncle'?'selected':''}>Aunt/Uncle</option>
+                    <option ${f.relation==='Cousin'?'selected':''}>Cousin</option>
+                    <option ${f.relation==='Other'?'selected':''}>Other</option>
+                </select></div>
+                <div class="form-group"><label>Condition/Diagnosis *</label><input type="text" id="f_condition" value="${f.condition||''}"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Age at Diagnosis</label><input type="number" id="f_age" value="${f.age||''}" min="0"></div>
+                    <div class="form-group"><label>Status</label><select id="f_status">
+                        <option value="">Select</option>
+                        <option ${f.status==='Living'?'selected':''}>Living</option>
+                        <option ${f.status==='Deceased'?'selected':''}>Deceased</option>
+                    </select></div>
+                </div>
+                <div class="form-group"><label>Notes</label><textarea id="f_notes">${f.notes||''}</textarea></div>
+            `;
+            saveFormData = function() {
+                const relation = document.getElementById('f_relation').value;
+                const condition = document.getElementById('f_condition').value.trim();
+                if (!relation || !condition) { alert('Family member and condition required'); return; }
+                const data = {relation, condition, age: document.getElementById('f_age').value, status: document.getElementById('f_status').value,
+                    notes: document.getElementById('f_notes').value.trim()};
+                if (isEdit) medicalData.family[index] = data;
+                else medicalData.family.push(data);
+                saveData(); renderFamily(); closeFormModal();
+            };
+        }
+        
+        function renderDisability() {
+            const content = document.getElementById('disability-content');
+            if (isLocked) {
+                content.innerHTML = `<div class="locked-message"><h3>🔒</h3><p>Disability information locked</p></div>`;
+                return;
+            }
+            
+            const d = medicalData.disability;
+            content.innerHTML = `
+                <h3>Employment Information</h3>
+                <div class="form-group"><label>Employer Name</label><input type="text" value="${d.employerName}" oninput="updateDisability('employerName',this.value)"></div>
+                <div class="form-group"><label>Employer Address</label><input type="text" value="${d.employerAddress}" oninput="updateDisability('employerAddress',this.value)"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Employer Phone</label><input type="tel" value="${d.employerPhone}" oninput="updateDisability('employerPhone',this.value)"></div>
+                    <div class="form-group"><label>Job Title</label><input type="text" value="${d.jobTitle}" oninput="updateDisability('jobTitle',this.value)"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Date Hired</label><input type="date" value="${d.dateHired}" oninput="updateDisability('dateHired',this.value)"></div>
+                    <div class="form-group"><label>Last Day Worked</label><input type="date" value="${d.lastDayWorked}" oninput="updateDisability('lastDayWorked',this.value)"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Hours Per Week</label><input type="number" value="${d.hoursPerWeek}" oninput="updateDisability('hoursPerWeek',this.value)"></div>
+                    <div class="form-group"><label>Annual Salary</label><input type="text" value="${d.salary}" oninput="updateDisability('salary',this.value)"></div>
+                </div>
+                <div class="form-group"><label>Job Duties</label><textarea oninput="updateDisability('jobDuties',this.value)">${d.jobDuties}</textarea></div>
+                
+                <h3>Disability Details</h3>
+                <div class="form-group"><label>Primary Diagnosis</label><input type="text" value="${d.primaryDiagnosis}" oninput="updateDisability('primaryDiagnosis',this.value)"></div>
+                <div class="form-group"><label>ICD-10 Code</label><input type="text" value="${d.icd10}" oninput="updateDisability('icd10',this.value)"></div>
+                <div class="form-group"><label>Secondary Diagnoses</label><textarea oninput="updateDisability('secondaryDiagnoses',this.value)">${d.secondaryDiagnoses}</textarea></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Symptoms First Appeared</label><input type="date" value="${d.symptomsFirstAppeared}" oninput="updateDisability('symptomsFirstAppeared',this.value)"></div>
+                    <div class="form-group"><label>First Consulted Doctor</label><input type="date" value="${d.firstConsultedDoctor}" oninput="updateDisability('firstConsultedDoctor',this.value)"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Unable to Work Since</label><input type="date" value="${d.unableToWork}" oninput="updateDisability('unableToWork',this.value)"></div>
+                    <div class="form-group"><label>Work-Related?</label><select onchange="updateDisability('workRelated',this.value)">
+                        <option value="">Select</option>
+                        <option ${d.workRelated==='Yes'?'selected':''}>Yes</option>
+                        <option ${d.workRelated==='No'?'selected':''}>No</option>
+                    </select></div>
+                </div>
+                <div class="form-group"><label>Treatment Plan</label><textarea oninput="updateDisability('treatmentPlan',this.value)">${d.treatmentPlan}</textarea></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Treating Physician</label><input type="text" value="${d.treatingPhysician}" oninput="updateDisability('treatingPhysician',this.value)"></div>
+                    <div class="form-group"><label>Physician Phone</label><input type="tel" value="${d.physicianPhone}" oninput="updateDisability('physicianPhone',this.value)"></div>
+                </div>
+                <div class="form-group"><label>Expected Return to Work</label><input type="date" value="${d.returnToWorkDate}" oninput="updateDisability('returnToWorkDate',this.value)"></div>
+                <div class="form-group"><label>Notes</label><textarea oninput="updateDisability('notes',this.value)">${d.notes}</textarea></div>
+            `;
+        }
+        
+        function updateDisability(field, value) {
+            medicalData.disability[field] = value;
+        }
+        
+        function renderAuthorizations() {
+            const content = document.getElementById('authorizations-content');
+            if (isLocked) {
+                content.innerHTML = `<div class="locked-message"><h3>🔒</h3><p>${medicalData.authorizations.length} records</p></div>`;
+                return;
+            }
+            let html = '<button class="add-record-btn" onclick="showAuthForm()">➕ Add Prior Authorization</button><div class="records-list">';
+            medicalData.authorizations.forEach((a, i) => {
+                html += `<div class="record-card"><h3>${a.service||'Unnamed'}</h3><div class="record-detail">`;
+                if(a.date) html += `<div class="record-detail-item"><label>Date Requested:</label> ${a.date}</div>`;
+                if(a.status) html += `<div class="record-detail-item"><label>Status:</label> ${a.status}</div>`;
+                if(a.authNumber) html += `<div class="record-detail-item"><label>Auth #:</label> ${a.authNumber}</div>`;
+                html += `</div><div class="record-actions"><button class="edit-btn" onclick="showAuthForm(${i})">✏️ Edit</button><button class="delete-btn" onclick="deleteRecord('authorizations',${i})">🗑️ Delete</button></div></div>`;
+            });
+            content.innerHTML = html + '</div>';
+        }
+        
+        function showAuthForm(index = -1) {
+            const isEdit = index >= 0;
+            const a = isEdit ? medicalData.authorizations[index] : {};
+            openFormModal(isEdit ? 'Edit Prior Authorization' : 'Add Prior Authorization', 'authorizations', index);
+            document.getElementById('formModalBody').innerHTML = `
+                <div class="form-group"><label>Service/Procedure/Medication *</label><input type="text" id="f_service" value="${a.service||''}"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Date Requested</label><input type="date" id="f_date" value="${a.date||''}"></div>
+                    <div class="form-group"><label>Requesting Doctor</label><input type="text" id="f_doctor" value="${a.doctor||''}"></div>
+                </div>
+                <div class="form-group"><label>Insurance Company</label><input type="text" id="f_insurance" value="${a.insurance||''}"></div>
+                <div class="form-group"><label>Status</label><select id="f_status">
+                    <option value="">Select</option>
+                    <option ${a.status==='Pending'?'selected':''}>Pending</option>
+                    <option ${a.status==='Approved'?'selected':''}>Approved</option>
+                    <option ${a.status==='Denied'?'selected':''}>Denied</option>
+                </select></div>
+                <div class="form-group"><label>Authorization Number</label><input type="text" id="f_authNumber" value="${a.authNumber||''}"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Date Approved</label><input type="date" id="f_dateApproved" value="${a.dateApproved||''}"></div>
+                    <div class="form-group"><label>Expiration Date</label><input type="date" id="f_expirationDate" value="${a.expirationDate||''}"></div>
+                </div>
+                <div class="form-group"><label>Notes</label><textarea id="f_notes">${a.notes||''}</textarea></div>
+            `;
+            saveFormData = function() {
+                const service = document.getElementById('f_service').value.trim();
+                if (!service) { alert('Service required'); return; }
+                const data = {service, date: document.getElementById('f_date').value, doctor: document.getElementById('f_doctor').value.trim(),
+                    insurance: document.getElementById('f_insurance').value.trim(), status: document.getElementById('f_status').value,
+                    authNumber: document.getElementById('f_authNumber').value.trim(), dateApproved: document.getElementById('f_dateApproved').value,
+                    expirationDate: document.getElementById('f_expirationDate').value, notes: document.getElementById('f_notes').value.trim()};
+                if (isEdit) medicalData.authorizations[index] = data;
+                else medicalData.authorizations.push(data);
+                saveData(); renderAuthorizations(); closeFormModal();
+            };
+        }
+        
+        function deleteRecord(section, index) {
+            if (confirm('Delete this record?')) {
+                medicalData[section].splice(index, 1);
+                saveData();
+                if (section === 'doctors') renderDoctors();
+                else if (section === 'insurance') renderInsurance();
+                else if (section === 'appointments') renderAppointments();
+                else if (section === 'medications') renderMedications();
+                else if (section === 'allergies') renderAllergies();
+                else if (section === 'vaccines') renderVaccines();
+                else if (section === 'tests') renderTests();
+                else if (section === 'surgeries') renderSurgeries();
+                else if (section === 'symptoms') renderSymptoms();
+                else if (section === 'family') renderFamily();
+                else if (section === 'authorizations') renderAuthorizations();
+            }
+        }
+        
+        // Data Management
+        function saveData() {
+            const dataToSave = {pin: userPIN, securityQuestion: securityQuestion, securityAnswer: securityAnswer, data: medicalData};
+            try {
+                localStorage.setItem('medicalTrackerData', JSON.stringify(dataToSave));
+                showSaveStatus('✅ Saved');
+            } catch (e) {
+                showSaveStatus('⚠️ Save failed');
+            }
+        }
+        
+        function loadData() {
+            try {
+                const saved = localStorage.getItem('medicalTrackerData');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    userPIN = parsed.pin || '';
+                    securityQuestion = parsed.securityQuestion || '';
+                    securityAnswer = parsed.securityAnswer || '';
+                    medicalData = parsed.data || medicalData;
+                }
+            } catch (e) {
+                console.error('Load failed:', e);
+            }
+        }
+        
+        function showSaveStatus(message) {
+            const status = document.getElementById('saveStatus');
+            status.textContent = message;
+            status.className = 'save-status success';
+            status.style.display = 'block';
+            setTimeout(() => status.style.display = 'none', 2000);
+        }
+        
+        function startAutoSave() {
+            autoSaveInterval = setInterval(() => {
+                if (!isLocked) saveData();
+            }, 30000);
+        }
+        
+        function exportData() {
+            const dataStr = JSON.stringify(medicalData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `medical-tracker-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        medicalData = JSON.parse(event.target.result);
+                        saveData();
+                        renderAll();
+                        alert('✅ Data imported successfully!');
+                    } catch (err) {
+                        alert('❌ Import failed. Invalid file.');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+        
+        function printData() {
+            window.print();
+        }
+        
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
