@@ -1,0 +1,1914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Bill & Budget Tracker</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        input, textarea, select {
+            -webkit-user-select: auto;
+            user-select: auto;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 50%, #1abc9c 100%);
+            min-height: 100vh;
+            padding: 10px;
+            color: #333;
+            -webkit-font-smoothing: antialiased;
+            touch-action: manipulation;
+        }
+
+        /* WELCOME MODAL */
+        .welcome-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .welcome-modal.show {
+            display: flex;
+        }
+        
+        .welcome-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .welcome-content h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .welcome-list {
+            list-style: none;
+            margin: 20px 0;
+        }
+        
+        .welcome-list li {
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+        
+        .welcome-list li strong {
+            color: #2d3748;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .welcome-content button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            min-height: 44px;
+        }
+        
+        .welcome-content button:active {
+            transform: scale(0.98);
+        }
+
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 20px);
+            animation: slide 20s linear infinite;
+        }
+
+        @keyframes slide {
+            0% { transform: translateX(-50px); }
+            100% { transform: translateX(50px); }
+        }
+
+        .header h1 {
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header p {
+            font-size: clamp(1rem, 3vw, 1.1rem);
+            opacity: 0.95;
+            position: relative;
+            z-index: 2;
+        }
+
+        .controls {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            padding: 15px 20px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            touch-action: manipulation;
+            min-height: 44px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 13px;
+            min-height: 38px;
+        }
+
+        .tabs {
+            background: #34495e;
+            display: flex;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tab {
+            flex: 1;
+            min-width: 120px;
+            padding: 15px 10px;
+            text-align: center;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            font-size: 14px;
+            font-weight: 600;
+            touch-action: manipulation;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab.active {
+            background: rgba(255, 255, 255, 0.15);
+            border-bottom-color: #3498db;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section h2::before {
+            content: attr(data-icon);
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #fafbfc;
+            touch-action: manipulation;
+            min-height: 44px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: #3498db;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-paid { background: rgba(39, 174, 96, 0.15); color: #27ae60; }
+        .status-pending { background: rgba(241, 196, 15, 0.15); color: #f39c12; }
+        .status-overdue { background: rgba(231, 76, 60, 0.15); color: #e74c3c; }
+        .status-autodraft { background: rgba(155, 89, 182, 0.15); color: #9b59b6; }
+
+        .calendar-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .current-month {
+            font-size: 1.3rem;
+            font-weight: 600;
+            min-width: 180px;
+            text-align: center;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .calendar-header {
+            background: #34495e;
+            color: white;
+            padding: 10px 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .calendar-day {
+            background: #f8f9fa;
+            min-height: 100px;
+            padding: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .calendar-day:hover {
+            background: #e3f2fd;
+        }
+
+        .calendar-day.other-month {
+            background: #f5f5f5;
+            color: #999;
+        }
+
+        .calendar-day.today {
+            background: #fff3e0;
+            border: 2px solid #ff9800;
+        }
+
+        .day-number {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+
+        .bill-item {
+            background: #3498db;
+            color: white;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 10px;
+            margin-bottom: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .bill-item:hover {
+            transform: scale(1.05);
+        }
+
+        .bill-item.paid { background: #27ae60; }
+        .bill-item.overdue { background: #e74c3c; }
+        .bill-item.autodraft { background: #9b59b6; }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .summary-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .summary-item h3 {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+
+        .summary-item .amount {
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .summary-item .detail {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        .upcoming-item {
+            background: rgba(255, 255, 255, 0.5);
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .upcoming-urgent {
+            background: rgba(231, 76, 60, 0.2);
+            border-left: 4px solid #e74c3c;
+        }
+
+        .upcoming-soon {
+            background: rgba(241, 196, 15, 0.2);
+            border-left: 4px solid #f39c12;
+        }
+
+        .upcoming-normal {
+            background: rgba(52, 152, 219, 0.2);
+            border-left: 4px solid #3498db;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 25px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 5px;
+            touch-action: manipulation;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+            max-width: 300px;
+            font-size: 14px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                border-radius: 15px;
+            }
+
+            .header {
+                padding: 20px 15px;
+            }
+
+            .tab-content {
+                padding: 15px;
+            }
+
+            .section {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .calendar-day {
+                min-height: 70px;
+                padding: 4px;
+            }
+
+            .bill-item {
+                font-size: 9px;
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+
+            .controls {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .btn-group {
+                justify-content: center;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .controls, .tabs, .btn, .modal {
+                display: none !important;
+            }
+
+            .container {
+                box-shadow: none;
+            }
+
+            .section {
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Welcome Modal -->
+    <div id="welcomeModal" class="welcome-modal">
+        <div class="welcome-content">
+            <h2>Welcome to Financial Freedom Tracker! 💰</h2>
+            <ul class="welcome-list">
+                <li>
+                    <strong>📅 Track Bills & Budget</strong>
+                    Manage all your bills with a visual calendar, track payments, and monitor your monthly budget in one place.
+                </li>
+                <li>
+                    <strong>💾 Auto-Saves Every 30 Seconds</strong>
+                    Your financial data automatically saves. You can also manually save, export backups, or import previous data anytime.
+                </li>
+                <li>
+                    <strong>📱 Works Completely Offline</strong>
+                    Once saved to your device, use it anywhere without internet. Perfect for managing finances on the go!
+                </li>
+            </ul>
+            <button onclick="closeWelcome()">Get Started</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>📅 Bill & Budget Tracker</h1>
+            <p>Complete financial management with calendar, savings tracking, and analytics</p>
+        </div>
+
+        <div class="controls">
+            <div id="save-status">Auto-save enabled</div>
+            <div class="btn-group">
+                <button class="btn btn-secondary btn-small" id="btn-download">📥 Download</button>
+                <button class="btn btn-secondary btn-small" id="btn-upload">📤 Upload</button>
+                <button class="btn btn-success btn-small" id="btn-save">💾 Save</button>
+                <button class="btn btn-secondary btn-small" id="btn-print">🖨️ Print</button>
+                <button class="btn btn-danger btn-small" id="btn-clear">🗑️ Clear</button>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" data-tab="calendar">📅 Calendar</div>
+            <div class="tab" data-tab="bills">📋 All Bills</div>
+            <div class="tab" data-tab="manage">💳 Management</div>
+            <div class="tab" data-tab="savings">💰 Savings</div>
+            <div class="tab" data-tab="analytics">📊 Analytics</div>
+        </div>
+
+        <input type="file" id="file-input" style="display: none;" accept=".json">
+
+        <!-- CALENDAR TAB -->
+        <div class="tab-content active" id="calendar">
+            <div class="section">
+                <div class="calendar-controls">
+                    <div class="calendar-nav">
+                        <button class="btn btn-small" id="btn-prev-month">‹ Previous</button>
+                        <div class="current-month" id="current-month">January 2025</div>
+                        <button class="btn btn-small" id="btn-next-month">Next ›</button>
+                    </div>
+                </div>
+                <div class="calendar-grid" id="calendar-grid"></div>
+            </div>
+
+            <div class="section">
+                <h2 data-icon="⏰">Upcoming Bills (Next 7 Days)</h2>
+                <div id="upcoming-bills-list"></div>
+            </div>
+
+            <div class="section">
+                <h2 data-icon="📊">Monthly Overview</h2>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <h3>Total Bills</h3>
+                        <div class="amount" id="total-bills">$0</div>
+                        <div class="detail">Monthly</div>
+                    </div>
+                    <div class="summary-item">
+                        <h3>Paid</h3>
+                        <div class="amount" id="paid-month">$0</div>
+                        <div class="detail">This Month</div>
+                    </div>
+                    <div class="summary-item">
+                        <h3>Remaining</h3>
+                        <div class="amount" id="remaining-month">$0</div>
+                        <div class="detail">To Pay</div>
+                    </div>
+                    <div class="summary-item">
+                        <h3>Overdue</h3>
+                        <div class="amount" id="overdue-count">0</div>
+                        <div class="detail">Bills</div>
+                    </div>
+                    <div class="summary-item">
+                        <h3>Auto-Draft</h3>
+                        <div class="amount" id="autodraft-count">0</div>
+                        <div class="detail">Bills</div>
+                    </div>
+                    <div class="summary-item">
+                        <h3>Due Next 7 Days</h3>
+                        <div class="amount" id="upcoming-week">$0</div>
+                        <div class="detail">Amount</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ALL BILLS TAB -->
+        <div class="tab-content" id="bills">
+            <div class="section">
+                <h2 data-icon="📋">Complete Bills List</h2>
+                <div id="all-bills-list"></div>
+            </div>
+        </div>
+
+        <!-- MANAGEMENT TAB -->
+        <div class="tab-content" id="manage">
+            <div class="section">
+                <h2 data-icon="💰">Payment Accounts</h2>
+                <div id="accounts-container"></div>
+                <button class="btn" id="btn-add-account">+ Add Account</button>
+            </div>
+
+            <div class="section">
+                <h2 data-icon="💳">Bill Management</h2>
+                <div id="bills-container"></div>
+                <button class="btn" id="btn-add-bill">+ Add Bill</button>
+            </div>
+        </div>
+
+        <!-- SAVINGS TAB -->
+        <div class="tab-content" id="savings">
+            <div class="section">
+                <h2 data-icon="💵">Income & Expenses</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Monthly Income ($)</label>
+                        <input type="number" id="monthly-income" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label>Savings Goal ($)</label>
+                        <input type="number" id="savings-goal" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label>Current Savings ($)</label>
+                        <input type="number" id="current-savings" step="0.01" placeholder="0.00">
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 data-icon="📊">Savings Summary</h2>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <h3>Monthly Income</h3>
+                        <div class="amount" id="display-income">$0</div>
+                    </div>
+                    <div class="summary-item">
+                        <h3>Monthly Bills</h3>
+                        <div class="amount" id="display-expenses">$0</div>
+                    </div>
+                    <div class="summary-item">
+                        <h3>Net Savings</h3>
+                        <div class="amount" id="display-net">$0</div>
+                    </div>
+                    <div class="summary-item">
+                        <h3>Current Savings</h3>
+                        <div class="amount" id="display-current">$0</div>
+                    </div>
+                    <div class="summary-item">
+                        <h3>Savings Goal</h3>
+                        <div class="amount" id="display-goal">$0</div>
+                    </div>
+                    <div class="summary-item">
+                        <h3>Progress</h3>
+                        <div class="amount" id="display-progress">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 data-icon="📈">Savings History</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="savings-date">
+                    </div>
+                    <div class="form-group">
+                        <label>Amount Saved ($)</label>
+                        <input type="number" id="savings-amount" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <input type="text" id="savings-notes" placeholder="Optional notes">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn" id="btn-add-savings">+ Add Savings Entry</button>
+                    <button class="btn btn-secondary" id="btn-cancel-savings" style="display: none;">Cancel</button>
+                </div>
+                <div id="savings-history" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+
+        <!-- ANALYTICS TAB -->
+        <div class="tab-content" id="analytics">
+            <div class="section">
+                <h2 data-icon="📊">Financial Charts</h2>
+                <div class="chart-container">
+                    <canvas id="income-expense-chart"></canvas>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 data-icon="📈">Savings Growth</h2>
+                <div class="chart-container">
+                    <canvas id="savings-chart"></canvas>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 data-icon="🎯">Bills by Category</h2>
+                <div class="chart-container">
+                    <canvas id="category-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="clear-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="close-clear">&times;</span>
+            <h3>⚠️ Clear All Data</h3>
+            <p>Are you sure you want to clear all data? This cannot be undone.</p>
+            <p style="margin-top: 10px;"><strong>Tip:</strong> Download a backup first!</p>
+            <div style="margin-top: 20px;">
+                <button class="btn btn-secondary" id="btn-cancel-clear">Cancel</button>
+                <button class="btn btn-danger" id="btn-confirm-clear" style="margin-left: 10px;">Clear All Data</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // Data structure
+        let appData = {
+            bills: [],
+            accounts: [],
+            savings: {
+                monthlyIncome: 0,
+                savingsGoal: 0,
+                currentSavings: 0,
+                history: []
+            },
+            currentMonth: new Date().getMonth(),
+            currentYear: new Date().getFullYear()
+        };
+
+        let nextBillId = 1;
+        let nextAccountId = 1;
+        let autoSaveTimeout;
+        let charts = {};
+        let editingSavingsIndex = null; // Track which savings entry is being edited
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEventListeners();
+            loadData();
+            updateAllDisplays();
+            
+            // Show welcome modal on first use
+            if (!localStorage.getItem('billTrackerWelcome')) {
+                document.getElementById('welcomeModal').classList.add('show');
+            }
+        });
+
+        function closeWelcome() {
+            document.getElementById('welcomeModal').classList.remove('show');
+            localStorage.setItem('billTrackerWelcome', 'true');
+            saveData(false);
+        }
+
+        function initializeEventListeners() {
+            // Tab switching
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    switchTab(this.dataset.tab);
+                });
+            });
+
+            // Control buttons
+            document.getElementById('btn-download').addEventListener('click', downloadData);
+            document.getElementById('btn-upload').addEventListener('click', () => document.getElementById('file-input').click());
+            document.getElementById('btn-save').addEventListener('click', () => saveData(true));
+            document.getElementById('btn-print').addEventListener('click', () => window.print());
+            document.getElementById('btn-clear').addEventListener('click', () => document.getElementById('clear-modal').style.display = 'block');
+
+            // Calendar navigation
+            document.getElementById('btn-prev-month').addEventListener('click', previousMonth);
+            document.getElementById('btn-next-month').addEventListener('click', nextMonth);
+
+            // Management buttons
+            document.getElementById('btn-add-account').addEventListener('click', addAccount);
+            document.getElementById('btn-add-bill').addEventListener('click', addBill);
+            document.getElementById('btn-add-savings').addEventListener('click', addSavingsEntry);
+            document.getElementById('btn-cancel-savings').addEventListener('click', cancelSavingsEdit);
+
+            // Savings inputs
+            document.getElementById('monthly-income').addEventListener('input', function() {
+                appData.savings.monthlyIncome = parseFloat(this.value) || 0;
+                updateSavingsSummary();
+                autoSave();
+            });
+            document.getElementById('savings-goal').addEventListener('input', function() {
+                appData.savings.savingsGoal = parseFloat(this.value) || 0;
+                updateSavingsSummary();
+                autoSave();
+            });
+            document.getElementById('current-savings').addEventListener('input', function() {
+                appData.savings.currentSavings = parseFloat(this.value) || 0;
+                updateSavingsSummary();
+                autoSave();
+            });
+
+            // File upload
+            document.getElementById('file-input').addEventListener('change', uploadData);
+
+            // Modal controls
+            document.getElementById('close-clear').addEventListener('click', () => document.getElementById('clear-modal').style.display = 'none');
+            document.getElementById('btn-cancel-clear').addEventListener('click', () => document.getElementById('clear-modal').style.display = 'none');
+            document.getElementById('btn-confirm-clear').addEventListener('click', confirmClearData);
+
+            // Close modal on outside click
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('clear-modal');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+
+            if (tabId === 'analytics') {
+                setTimeout(() => updateCharts(), 100);
+            }
+        }
+
+        function autoSave() {
+            clearTimeout(autoSaveTimeout);
+            document.getElementById('save-status').textContent = 'Saving...';
+            autoSaveTimeout = setTimeout(() => {
+                saveData(false);
+            }, 1000);
+        }
+
+        function saveData(showNotification = true) {
+            try {
+                const data = {
+                    appData,
+                    nextBillId,
+                    nextAccountId,
+                    version: '2.0',
+                    savedDate: new Date().toISOString()
+                };
+                localStorage.setItem('billTrackerData', JSON.stringify(data));
+                document.getElementById('save-status').textContent = 'Saved ✓';
+                setTimeout(() => {
+                    document.getElementById('save-status').textContent = 'Auto-save enabled';
+                }, 2000);
+                if (showNotification) {
+                    showToast('Data saved successfully!');
+                }
+            } catch (error) {
+                console.error('Error saving:', error);
+                showToast('Error saving data', 'error');
+            }
+        }
+
+        function loadData() {
+            try {
+                const dataString = localStorage.getItem('billTrackerData');
+                if (!dataString) return;
+
+                const data = JSON.parse(dataString);
+                appData = data.appData || appData;
+                nextBillId = data.nextBillId || 1;
+                nextAccountId = data.nextAccountId || 1;
+
+                // Populate savings inputs
+                document.getElementById('monthly-income').value = appData.savings.monthlyIncome || '';
+                document.getElementById('savings-goal').value = appData.savings.savingsGoal || '';
+                document.getElementById('current-savings').value = appData.savings.currentSavings || '';
+
+                showToast('Data loaded successfully!');
+            } catch (error) {
+                console.error('Error loading:', error);
+            }
+        }
+
+        function downloadData() {
+            try {
+                const data = {
+                    appData,
+                    nextBillId,
+                    nextAccountId,
+                    version: '2.0',
+                    savedDate: new Date().toISOString()
+                };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `bill-tracker-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('Data downloaded successfully!');
+            } catch (error) {
+                console.error('Error downloading:', error);
+                showToast('Error downloading data', 'error');
+            }
+        }
+
+        function uploadData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    appData = data.appData || appData;
+                    nextBillId = data.nextBillId || 1;
+                    nextAccountId = data.nextAccountId || 1;
+                    
+                    document.getElementById('monthly-income').value = appData.savings.monthlyIncome || '';
+                    document.getElementById('savings-goal').value = appData.savings.savingsGoal || '';
+                    document.getElementById('current-savings').value = appData.savings.currentSavings || '';
+                    
+                    updateAllDisplays();
+                    saveData(false);
+                    showToast('Data uploaded successfully!');
+                } catch (error) {
+                    console.error('Error uploading:', error);
+                    showToast('Invalid file format', 'error');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function confirmClearData() {
+            localStorage.removeItem('billTrackerData');
+            localStorage.removeItem('billTrackerWelcome');
+            appData = {
+                bills: [],
+                accounts: [],
+                savings: { monthlyIncome: 0, savingsGoal: 0, currentSavings: 0, history: [] },
+                currentMonth: new Date().getMonth(),
+                currentYear: new Date().getFullYear()
+            };
+            nextBillId = 1;
+            nextAccountId = 1;
+            
+            document.getElementById('monthly-income').value = '';
+            document.getElementById('savings-goal').value = '';
+            document.getElementById('current-savings').value = '';
+            
+            updateAllDisplays();
+            document.getElementById('clear-modal').style.display = 'none';
+            showToast('All data cleared');
+        }
+
+        function updateAllDisplays() {
+            updateMonthDisplay();
+            renderCalendar();
+            renderBillsList();
+            renderAccounts();
+            renderBills();
+            renderSavingsHistory();
+            calculateSummary();
+            updateSavingsSummary();
+            updateUpcomingBills();
+        }
+
+        function updateMonthDisplay() {
+            const months = ['January', 'February', 'March', 'April', 'May', 'June',
+                           'July', 'August', 'September', 'October', 'November', 'December'];
+            document.getElementById('current-month').textContent = 
+                `${months[appData.currentMonth]} ${appData.currentYear}`;
+        }
+
+        function previousMonth() {
+            appData.currentMonth--;
+            if (appData.currentMonth < 0) {
+                appData.currentMonth = 11;
+                appData.currentYear--;
+            }
+            updateMonthDisplay();
+            renderCalendar();
+            calculateSummary();
+            autoSave();
+        }
+
+        function nextMonth() {
+            appData.currentMonth++;
+            if (appData.currentMonth > 11) {
+                appData.currentMonth = 0;
+                appData.currentYear++;
+            }
+            updateMonthDisplay();
+            renderCalendar();
+            calculateSummary();
+            autoSave();
+        }
+
+        function addAccount() {
+            const account = {
+                id: nextAccountId++,
+                name: '',
+                type: 'checking',
+                nickname: ''
+            };
+            appData.accounts.push(account);
+            renderAccounts();
+            autoSave();
+        }
+
+        function addBill() {
+            const bill = {
+                id: nextBillId++,
+                name: '',
+                dueDate: 1,
+                amount: 0,
+                accountId: appData.accounts.length > 0 ? appData.accounts[0].id : null,
+                isAutoDraft: false,
+                category: 'utilities',
+                paymentHistory: [],
+                notes: ''
+            };
+            appData.bills.push(bill);
+            renderBills();
+            renderCalendar();
+            renderBillsList();
+            calculateSummary();
+            autoSave();
+        }
+
+        function removeAccount(id) {
+            appData.accounts = appData.accounts.filter(a => a.id !== id);
+            renderAccounts();
+            renderBills();
+            autoSave();
+        }
+
+        function removeBill(id) {
+            appData.bills = appData.bills.filter(b => b.id !== id);
+            renderBills();
+            renderCalendar();
+            renderBillsList();
+            calculateSummary();
+            autoSave();
+        }
+
+        function updateAccount(id, field, value) {
+            const account = appData.accounts.find(a => a.id === id);
+            if (account) {
+                account[field] = value;
+                renderAccounts();
+                renderBills(); // Re-render bills to show updated account nicknames
+                autoSave();
+            }
+        }
+
+        function updateBill(id, field, value) {
+            const bill = appData.bills.find(b => b.id === id);
+            if (bill) {
+                bill[field] = value;
+                renderCalendar();
+                renderBillsList();
+                calculateSummary();
+                autoSave();
+            }
+        }
+
+        function renderAccounts() {
+            const container = document.getElementById('accounts-container');
+            container.innerHTML = '';
+
+            appData.accounts.forEach(account => {
+                const div = document.createElement('div');
+                div.className = 'card';
+                div.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-title">${account.name || account.nickname || 'New Account'}</div>
+                        <button class="btn btn-danger btn-small" data-action="remove-account" data-id="${account.id}">Remove</button>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Account Name</label>
+                            <input type="text" placeholder="e.g., Wells Fargo Checking" value="${account.name}" data-action="update-account" data-id="${account.id}" data-field="name">
+                        </div>
+                        <div class="form-group">
+                            <label>Account Type</label>
+                            <select data-action="update-account" data-id="${account.id}" data-field="type">
+                                <option value="checking" ${account.type === 'checking' ? 'selected' : ''}>Checking</option>
+                                <option value="savings" ${account.type === 'savings' ? 'selected' : ''}>Savings</option>
+                                <option value="credit" ${account.type === 'credit' ? 'selected' : ''}>Credit Card</option>
+                                <option value="cash" ${account.type === 'cash' ? 'selected' : ''}>Cash</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nickname</label>
+                            <input type="text" placeholder="e.g., Main Account" value="${account.nickname}" data-action="update-account" data-id="${account.id}" data-field="nickname">
+                        </div>
+                    </div>
+                    <button class="btn btn-success btn-small" onclick="saveAccount(${account.id})">💾 Save Account</button>
+                `;
+                container.appendChild(div);
+            });
+
+            // Add event listeners
+            container.querySelectorAll('[data-action="update-account"]').forEach(el => {
+                el.addEventListener('change', function() {
+                    updateAccount(parseInt(this.dataset.id), this.dataset.field, this.value);
+                });
+            });
+            container.querySelectorAll('[data-action="remove-account"]').forEach(el => {
+                el.addEventListener('click', function() {
+                    removeAccount(parseInt(this.dataset.id));
+                });
+            });
+        }
+
+        function saveAccount(id) {
+            showToast('Account saved successfully!');
+        }
+
+        function renderBills() {
+            const container = document.getElementById('bills-container');
+            container.innerHTML = '';
+
+            // Sort bills by due date (day of month)
+            const sortedBills = [...appData.bills].sort((a, b) => a.dueDate - b.dueDate);
+
+            sortedBills.forEach(bill => {
+                const div = document.createElement('div');
+                div.className = 'card';
+                div.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-title">${bill.name || 'New Bill'}</div>
+                        <div>
+                            <span class="status-badge ${bill.isAutoDraft ? 'status-autodraft' : 'status-pending'}">
+                                ${bill.isAutoDraft ? 'Auto-Draft' : 'Manual'}
+                            </span>
+                            <button class="btn btn-danger btn-small" data-action="remove-bill" data-id="${bill.id}" style="margin-left: 10px;">Remove</button>
+                        </div>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Bill Name</label>
+                            <input type="text" placeholder="e.g., Electric Bill" value="${bill.name}" data-action="update-bill" data-id="${bill.id}" data-field="name">
+                        </div>
+                        <div class="form-group">
+                            <label>Due Date (Day of Month)</label>
+                            <input type="number" min="1" max="31" value="${bill.dueDate}" data-action="update-bill-number" data-id="${bill.id}" data-field="dueDate">
+                        </div>
+                        <div class="form-group">
+                            <label>Amount ($)</label>
+                            <input type="number" step="0.01" value="${bill.amount}" data-action="update-bill-number" data-id="${bill.id}" data-field="amount">
+                        </div>
+                        <div class="form-group">
+                            <label>Payment Account</label>
+                            <select data-action="update-bill-number" data-id="${bill.id}" data-field="accountId">
+                                <option value="">Select Account</option>
+                                ${appData.accounts.map(acc => 
+                                    `<option value="${acc.id}" ${acc.id === bill.accountId ? 'selected' : ''}>${acc.nickname || acc.name}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select data-action="update-bill" data-id="${bill.id}" data-field="category">
+                                <option value="utilities" ${bill.category === 'utilities' ? 'selected' : ''}>Utilities</option>
+                                <option value="housing" ${bill.category === 'housing' ? 'selected' : ''}>Housing</option>
+                                <option value="transportation" ${bill.category === 'transportation' ? 'selected' : ''}>Transportation</option>
+                                <option value="insurance" ${bill.category === 'insurance' ? 'selected' : ''}>Insurance</option>
+                                <option value="debt" ${bill.category === 'debt' ? 'selected' : ''}>Debt</option>
+                                <option value="subscription" ${bill.category === 'subscription' ? 'selected' : ''}>Subscription</option>
+                                <option value="other" ${bill.category === 'other' ? 'selected' : ''}>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Auto-Draft</label>
+                            <select data-action="update-bill-bool" data-id="${bill.id}" data-field="isAutoDraft">
+                                <option value="false" ${!bill.isAutoDraft ? 'selected' : ''}>Manual</option>
+                                <option value="true" ${bill.isAutoDraft ? 'selected' : ''}>Auto-Draft</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <input type="text" placeholder="Additional notes..." value="${bill.notes || ''}" data-action="update-bill" data-id="${bill.id}" data-field="notes">
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button class="btn btn-success btn-small" style="flex: 1;" onclick="saveBill(${bill.id})">💾 Save Bill</button>
+                        <button class="btn btn-success btn-small" style="flex: 1;" data-action="mark-paid" data-id="${bill.id}">✓ Mark as Paid This Month</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+
+            // Add event listeners
+            container.querySelectorAll('[data-action="update-bill"]').forEach(el => {
+                el.addEventListener('change', function() {
+                    updateBill(parseInt(this.dataset.id), this.dataset.field, this.value);
+                });
+            });
+            container.querySelectorAll('[data-action="update-bill-number"]').forEach(el => {
+                el.addEventListener('change', function() {
+                    updateBill(parseInt(this.dataset.id), this.dataset.field, parseFloat(this.value) || 0);
+                });
+            });
+            container.querySelectorAll('[data-action="update-bill-bool"]').forEach(el => {
+                el.addEventListener('change', function() {
+                    updateBill(parseInt(this.dataset.id), this.dataset.field, this.value === 'true');
+                });
+            });
+            container.querySelectorAll('[data-action="remove-bill"]').forEach(el => {
+                el.addEventListener('click', function() {
+                    removeBill(parseInt(this.dataset.id));
+                });
+            });
+            container.querySelectorAll('[data-action="mark-paid"]').forEach(el => {
+                el.addEventListener('click', function() {
+                    markAsPaid(parseInt(this.dataset.id));
+                });
+            });
+        }
+
+        function saveBill(id) {
+            showToast('Bill saved successfully!');
+        }
+
+        function renderCalendar() {
+            const container = document.getElementById('calendar-grid');
+            container.innerHTML = '';
+
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            days.forEach(day => {
+                const header = document.createElement('div');
+                header.className = 'calendar-header';
+                header.textContent = day;
+                container.appendChild(header);
+            });
+
+            const firstDay = new Date(appData.currentYear, appData.currentMonth, 1);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+            for (let i = 0; i < 42; i++) {
+                const currentDate = new Date(startDate);
+                currentDate.setDate(startDate.getDate() + i);
+
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                
+                if (currentDate.getMonth() !== appData.currentMonth) {
+                    dayElement.classList.add('other-month');
+                }
+                
+                if (isToday(currentDate)) {
+                    dayElement.classList.add('today');
+                }
+
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'day-number';
+                dayNumber.textContent = currentDate.getDate();
+                dayElement.appendChild(dayNumber);
+
+                const dayBills = getBillsForDate(currentDate);
+                dayBills.forEach(bill => {
+                    const billElement = document.createElement('div');
+                    billElement.className = 'bill-item';
+                    billElement.textContent = `${bill.name} $${bill.amount}`;
+                    
+                    if (bill.isAutoDraft) {
+                        billElement.classList.add('autodraft');
+                    } else if (isBillPaidForMonth(bill, currentDate)) {
+                        billElement.classList.add('paid');
+                    } else if (currentDate < new Date() && currentDate.getMonth() === appData.currentMonth) {
+                        billElement.classList.add('overdue');
+                    }
+                    
+                    dayElement.appendChild(billElement);
+                });
+
+                container.appendChild(dayElement);
+            }
+        }
+
+        function renderBillsList() {
+            const container = document.getElementById('all-bills-list');
+            container.innerHTML = '';
+
+            if (appData.bills.length === 0) {
+                container.innerHTML = '<div class="info-box"><p>No bills added yet. Go to Management tab to add bills.</p></div>';
+                return;
+            }
+
+            // Sort bills by due date (day of month)
+            const sortedBills = [...appData.bills].sort((a, b) => a.dueDate - b.dueDate);
+
+            sortedBills.forEach(bill => {
+                const account = appData.accounts.find(a => a.id === bill.accountId);
+                const currentMonthDate = new Date(appData.currentYear, appData.currentMonth, bill.dueDate);
+                const isPaid = isBillPaidForMonth(bill, currentMonthDate);
+                const isOverdue = currentMonthDate < new Date() && !isPaid;
+                
+                let statusClass = 'status-pending';
+                let statusText = 'Pending';
+                
+                if (bill.isAutoDraft) {
+                    statusClass = 'status-autodraft';
+                    statusText = 'Auto-Draft';
+                } else if (isPaid) {
+                    statusClass = 'status-paid';
+                    statusText = 'Paid';
+                } else if (isOverdue) {
+                    statusClass = 'status-overdue';
+                    statusText = 'Overdue';
+                }
+
+                const div = document.createElement('div');
+                div.className = 'card';
+                div.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-title">${bill.name}</div>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="form-grid">
+                        <div><strong>Due:</strong> Day ${bill.dueDate} each month</div>
+                        <div><strong>Amount:</strong> $${bill.amount.toFixed(2)}</div>
+                        <div><strong>Account:</strong> ${account ? (account.nickname || account.name) : 'None'}</div>
+                        <div><strong>Category:</strong> ${bill.category}</div>
+                    </div>
+                    ${bill.notes ? `<div style="margin-top: 10px;"><strong>Notes:</strong> ${bill.notes}</div>` : ''}
+                    ${!isPaid ? `<button class="btn btn-success btn-small" data-action="mark-paid-list" data-id="${bill.id}" style="margin-top: 15px;">Mark as Paid</button>` : ''}
+                `;
+                container.appendChild(div);
+            });
+
+            container.querySelectorAll('[data-action="mark-paid-list"]').forEach(el => {
+                el.addEventListener('click', function() {
+                    markAsPaid(parseInt(this.dataset.id));
+                });
+            });
+        }
+
+        function getBillsForDate(date) {
+            return appData.bills.filter(bill => bill.dueDate === date.getDate());
+        }
+
+        function isToday(date) {
+            const today = new Date();
+            return date.toDateString() === today.toDateString();
+        }
+
+        function isBillPaidForMonth(bill, date) {
+            const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+            return bill.paymentHistory.some(p => p.monthKey === monthKey);
+        }
+
+        function markAsPaid(billId) {
+            const bill = appData.bills.find(b => b.id === billId);
+            if (!bill) return;
+
+            const currentDate = new Date(appData.currentYear, appData.currentMonth, bill.dueDate);
+            const monthKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}`;
+            
+            if (isBillPaidForMonth(bill, currentDate)) {
+                showToast('Already marked as paid', 'error');
+                return;
+            }
+
+            bill.paymentHistory.push({
+                monthKey: monthKey,
+                datePaid: new Date().toISOString(),
+                amountPaid: bill.amount
+            });
+
+            renderCalendar();
+            renderBillsList();
+            calculateSummary();
+            updateCharts();
+            autoSave();
+            showToast(`${bill.name} marked as paid!`);
+        }
+
+        function calculateSummary() {
+            let totalBills = 0;
+            let paidThisMonth = 0;
+            let overdueCount = 0;
+            let autodraftCount = 0;
+            let upcomingWeek = 0;
+            
+            const currentDate = new Date();
+            const oneWeekFromNow = new Date(currentDate);
+            oneWeekFromNow.setDate(currentDate.getDate() + 7);
+
+            appData.bills.forEach(bill => {
+                totalBills += bill.amount;
+                const billDate = new Date(appData.currentYear, appData.currentMonth, bill.dueDate);
+                const isPaid = isBillPaidForMonth(bill, billDate);
+                
+                // Count auto-draft bills
+                if (bill.isAutoDraft) {
+                    autodraftCount++;
+                }
+                
+                if (isPaid) {
+                    paidThisMonth += bill.amount;
+                } else if (billDate < new Date() && billDate.getMonth() === new Date().getMonth()) {
+                    overdueCount++;
+                }
+                
+                // Calculate upcoming week amount
+                if (billDate >= currentDate && billDate <= oneWeekFromNow && !isPaid) {
+                    upcomingWeek += bill.amount;
+                }
+            });
+
+            document.getElementById('total-bills').textContent = `$${totalBills.toFixed(0)}`;
+            document.getElementById('paid-month').textContent = `$${paidThisMonth.toFixed(0)}`;
+            document.getElementById('remaining-month').textContent = `$${(totalBills - paidThisMonth).toFixed(0)}`;
+            document.getElementById('overdue-count').textContent = overdueCount;
+            document.getElementById('autodraft-count').textContent = autodraftCount;
+            document.getElementById('upcoming-week').textContent = `$${upcomingWeek.toFixed(0)}`;
+        }
+
+        function updateUpcomingBills() {
+            const container = document.getElementById('upcoming-bills-list');
+            const currentDate = new Date();
+            const upcomingBills = [];
+
+            for (let i = 0; i < 7; i++) {
+                const checkDate = new Date(currentDate);
+                checkDate.setDate(currentDate.getDate() + i);
+                
+                appData.bills.forEach(bill => {
+                    // Check if this bill's due date matches the day we're checking
+                    if (bill.dueDate === checkDate.getDate()) {
+                        const isPaid = isBillPaidForMonth(bill, checkDate);
+                        // Include both unpaid bills and auto-draft bills
+                        if (!isPaid || bill.isAutoDraft) {
+                            const existingBill = upcomingBills.find(b => 
+                                b.id === bill.id && 
+                                b.dueDate.getMonth() === checkDate.getMonth() &&
+                                b.dueDate.getDate() === checkDate.getDate()
+                            );
+                            
+                            // Don't add duplicates
+                            if (!existingBill) {
+                                upcomingBills.push({ 
+                                    ...bill, 
+                                    dueDate: new Date(checkDate), 
+                                    daysUntil: i,
+                                    isPaid: isPaid 
+                                });
+                            }
+                        }
+                    }
+                });
+            }
+
+            if (upcomingBills.length === 0) {
+                container.innerHTML = '<div class="upcoming-item upcoming-normal">No bills due in the next 7 days</div>';
+                return;
+            }
+
+            container.innerHTML = upcomingBills.map(bill => {
+                let urgencyClass = bill.daysUntil <= 1 ? 'upcoming-urgent' : bill.daysUntil <= 3 ? 'upcoming-soon' : 'upcoming-normal';
+                const statusBadge = bill.isPaid ? '<span style="background: #27ae60; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.85em; margin-left: 10px;">Paid</span>' : '';
+                return `
+                    <div class="upcoming-item ${urgencyClass}">
+                        <div><strong>${bill.name}</strong> - $${bill.amount.toFixed(2)} ${statusBadge}</div>
+                        <div>${bill.daysUntil === 0 ? 'Today' : bill.daysUntil === 1 ? 'Tomorrow' : `${bill.daysUntil} days`}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateSavingsSummary() {
+            const totalExpenses = appData.bills.reduce((sum, bill) => sum + bill.amount, 0);
+            const netSavings = appData.savings.monthlyIncome - totalExpenses;
+            const progress = appData.savings.savingsGoal > 0 ? 
+                ((appData.savings.currentSavings / appData.savings.savingsGoal) * 100).toFixed(0) : 0;
+
+            document.getElementById('display-income').textContent = `$${appData.savings.monthlyIncome.toFixed(0)}`;
+            document.getElementById('display-expenses').textContent = `$${totalExpenses.toFixed(0)}`;
+            document.getElementById('display-net').textContent = `$${netSavings.toFixed(0)}`;
+            document.getElementById('display-current').textContent = `$${appData.savings.currentSavings.toFixed(0)}`;
+            document.getElementById('display-goal').textContent = `$${appData.savings.savingsGoal.toFixed(0)}`;
+            document.getElementById('display-progress').textContent = `${progress}%`;
+        }
+
+        function addSavingsEntry() {
+            const date = document.getElementById('savings-date').value;
+            const amount = parseFloat(document.getElementById('savings-amount').value) || 0;
+            const notes = document.getElementById('savings-notes').value;
+
+            if (!date || amount === 0) {
+                showToast('Please enter date and amount', 'error');
+                return;
+            }
+
+            if (editingSavingsIndex !== null) {
+                // EDIT MODE - Update existing entry
+                const oldAmount = appData.savings.history[editingSavingsIndex].amount;
+                
+                appData.savings.history[editingSavingsIndex] = {
+                    date: date,
+                    amount: amount,
+                    notes: notes,
+                    timestamp: appData.savings.history[editingSavingsIndex].timestamp // Keep original timestamp
+                };
+
+                // Adjust current savings
+                appData.savings.currentSavings = appData.savings.currentSavings - oldAmount + amount;
+                document.getElementById('current-savings').value = appData.savings.currentSavings;
+
+                showToast('Savings entry updated!');
+                editingSavingsIndex = null;
+                
+                // Reset button
+                document.getElementById('btn-add-savings').textContent = '+ Add Savings Entry';
+                document.getElementById('btn-cancel-savings').style.display = 'none';
+            } else {
+                // ADD MODE - Create new entry
+                appData.savings.history.push({
+                    date: date,
+                    amount: amount,
+                    notes: notes,
+                    timestamp: new Date().toISOString()
+                });
+
+                appData.savings.currentSavings += amount;
+                document.getElementById('current-savings').value = appData.savings.currentSavings;
+
+                showToast('Savings entry added!');
+            }
+
+            // Clear form
+            document.getElementById('savings-date').value = '';
+            document.getElementById('savings-amount').value = '';
+            document.getElementById('savings-notes').value = '';
+
+            renderSavingsHistory();
+            updateSavingsSummary();
+            updateCharts();
+            autoSave();
+        }
+
+        function renderSavingsHistory() {
+            const container = document.getElementById('savings-history');
+            
+            if (appData.savings.history.length === 0) {
+                container.innerHTML = '<div class="info-box"><p>No savings entries yet.</p></div>';
+                return;
+            }
+
+            const sorted = [...appData.savings.history].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            container.innerHTML = sorted.map((entry, index) => {
+                const originalIndex = appData.savings.history.findIndex(e => e.timestamp === entry.timestamp);
+                return `
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">+$${entry.amount.toFixed(2)}</div>
+                        <div>
+                            <span style="margin-right: 10px;">${new Date(entry.date).toLocaleDateString()}</span>
+                            <button class="btn btn-small" onclick="editSavingsEntry(${originalIndex})" style="background: #667eea; padding: 5px 10px;">✏️ Edit</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteSavingsEntry(${originalIndex})" style="margin-left: 5px; padding: 5px 10px;">🗑️</button>
+                        </div>
+                    </div>
+                    ${entry.notes ? `<div style="margin-top: 10px; color: #666;">${entry.notes}</div>` : ''}
+                </div>
+            `;
+            }).join('');
+        }
+
+        function editSavingsEntry(index) {
+            const entry = appData.savings.history[index];
+            if (!entry) return;
+
+            // Set edit mode
+            editingSavingsIndex = index;
+
+            // Populate form
+            document.getElementById('savings-date').value = entry.date;
+            document.getElementById('savings-amount').value = entry.amount;
+            document.getElementById('savings-notes').value = entry.notes || '';
+
+            // Change button text and show cancel button
+            document.getElementById('btn-add-savings').textContent = '💾 Update Entry';
+            document.getElementById('btn-cancel-savings').style.display = 'block';
+
+            // Scroll to form
+            document.getElementById('savings-date').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function cancelSavingsEdit() {
+            // Clear edit mode
+            editingSavingsIndex = null;
+
+            // Clear form
+            document.getElementById('savings-date').value = '';
+            document.getElementById('savings-amount').value = '';
+            document.getElementById('savings-notes').value = '';
+
+            // Reset button
+            document.getElementById('btn-add-savings').textContent = '+ Add Savings Entry';
+            document.getElementById('btn-cancel-savings').style.display = 'none';
+        }
+
+        function deleteSavingsEntry(index) {
+            if (!confirm('Delete this savings entry?')) return;
+
+            const entry = appData.savings.history[index];
+            
+            // Adjust current savings
+            appData.savings.currentSavings -= entry.amount;
+            document.getElementById('current-savings').value = appData.savings.currentSavings;
+
+            // Remove entry
+            appData.savings.history.splice(index, 1);
+
+            // If we were editing this entry, cancel edit mode
+            if (editingSavingsIndex === index) {
+                editingSavingsIndex = null;
+                document.getElementById('btn-add-savings').textContent = '+ Add Savings Entry';
+                document.getElementById('btn-cancel-savings').style.display = 'none';
+                document.getElementById('savings-date').value = '';
+                document.getElementById('savings-amount').value = '';
+                document.getElementById('savings-notes').value = '';
+            } else if (editingSavingsIndex !== null && editingSavingsIndex > index) {
+                // Adjust the editing index if we deleted an entry before it
+                editingSavingsIndex--;
+            }
+
+            renderSavingsHistory();
+            updateSavingsSummary();
+            updateCharts();
+            autoSave();
+            showToast('Savings entry deleted');
+        }
+
+        function updateCharts() {
+            // Income vs Expenses Chart
+            const incomeExpenseCtx = document.getElementById('income-expense-chart');
+            if (incomeExpenseCtx) {
+                if (charts.incomeExpense) charts.incomeExpense.destroy();
+                
+                const totalExpenses = appData.bills.reduce((sum, bill) => sum + bill.amount, 0);
+                const netSavings = appData.savings.monthlyIncome - totalExpenses;
+
+                charts.incomeExpense = new Chart(incomeExpenseCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Income', 'Expenses', 'Net Savings'],
+                        datasets: [{
+                            label: 'Amount ($)',
+                            data: [appData.savings.monthlyIncome, totalExpenses, netSavings],
+                            backgroundColor: ['#27ae60', '#e74c3c', '#3498db']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+
+            // Savings Growth Chart
+            const savingsCtx = document.getElementById('savings-chart');
+            if (savingsCtx) {
+                if (charts.savings) charts.savings.destroy();
+                
+                const history = appData.savings.history
+                    .sort((a, b) => new Date(a.date) - new Date(b.date))
+                    .slice(-12);
+                
+                let runningTotal = appData.savings.currentSavings - history.reduce((sum, h) => sum + h.amount, 0);
+                const data = history.map(h => {
+                    runningTotal += h.amount;
+                    return runningTotal;
+                });
+
+                charts.savings = new Chart(savingsCtx, {
+                    type: 'line',
+                    data: {
+                        labels: history.map(h => new Date(h.date).toLocaleDateString()),
+                        datasets: [{
+                            label: 'Savings Balance',
+                            data: data,
+                            borderColor: '#27ae60',
+                            backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Category Chart
+            const categoryCtx = document.getElementById('category-chart');
+            if (categoryCtx) {
+                if (charts.category) charts.category.destroy();
+                
+                const categories = {};
+                appData.bills.forEach(bill => {
+                    categories[bill.category] = (categories[bill.category] || 0) + bill.amount;
+                });
+
+                charts.category = new Chart(categoryCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(categories),
+                        datasets: [{
+                            data: Object.values(categories),
+                            backgroundColor: ['#3498db', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c', '#34495e', '#95a5a6']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type === 'error' ? 'error' : ''} show`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+    </script>
+</body>
+</html>
