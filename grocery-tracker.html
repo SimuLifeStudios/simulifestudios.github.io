@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Shop Smart, Eat Well - Grocery Shopper</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        /* Welcome Modal */
+        .welcome-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .welcome-modal.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            color: white;
+            animation: slideUp 0.4s ease;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-content h2 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-content .subtitle {
+            font-size: 1.1em;
+            margin-bottom: 30px;
+            color: #e0e0e0;
+            font-style: italic;
+        }
+
+        .modal-features {
+            text-align: left;
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-features li {
+            margin: 15px 0;
+            font-size: 1.05em;
+            line-height: 1.6;
+            padding-left: 10px;
+        }
+
+        .modal-features strong {
+            color: #ffd700;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(76, 175, 80, 0.6);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+        
+        .controls {
+            background: #f8f9fa;
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+            min-height: 44px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+        
+        .tabs {
+            display: flex;
+            overflow-x: auto;
+            background: #f8f9fa;
+            border-bottom: 3px solid #667eea;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .tab {
+            flex: 0 0 auto;
+            padding: 15px 25px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+            min-height: 44px;
+        }
+        
+        .tab:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .department-title {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .item {
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .item.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .custom-item-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .custom-item-input input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1em;
+            min-height: 44px;
+        }
+        
+        .custom-item-input input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .shopping-list-section {
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+        }
+        
+        .shopping-list-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        
+        .shopping-list-section ul {
+            list-style: none;
+        }
+        
+        .shopping-list-section li {
+            padding: 10px;
+            background: white;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 25px;
+            background: #27ae60;
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+            opacity: 0;
+            transform: translateY(100px);
+            transition: all 0.4s ease;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .items-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                padding: 10px;
+            }
+            
+            .btn {
+                padding: 10px 18px;
+                font-size: 0.9em;
+            }
+        }
+        
+        @media print {
+            .controls, .tabs, .btn, .welcome-modal {
+                display: none !important;
+            }
+            
+            .tab-content {
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Welcome Modal -->
+    <div class="welcome-modal" id="welcomeModal">
+        <div class="modal-content">
+            <h2>🛒 Welcome to Your Grocery Planner!</h2>
+            <p class="subtitle">Shop Smart, Eat Well</p>
+            
+            <div class="modal-features">
+                <ul>
+                    <li><strong>🗂️ Organized by Department:</strong> Browse items just like walking through your favorite store - Produce, Meats, Dairy, and more!</li>
+                    <li><strong>💾 Auto-Save Everything:</strong> Your shopping list saves automatically to your device - no cloud, no accounts, complete privacy</li>
+                    <li><strong>📱 Perfect for Shopping:</strong> Use on your phone at the store, check off items as you go. Works offline!</li>
+                </ul>
+            </div>
+            
+            <button class="start-btn" onclick="closeWelcomeModal()">🛒 Start Shopping!</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🛒 Shop Smart, Eat Well</h1>
+            <p>Your Digital Grocery Shopping Companion</p>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" onclick="saveData()">💾 Save</button>
+            <button class="btn" onclick="exportData()">📥 Export</button>
+            <button class="btn" onclick="document.getElementById('importFile').click()">📂 Import</button>
+            <button class="btn" onclick="window.print()">🖨️ Print</button>
+            <button class="btn btn-danger" onclick="clearAll()">🗑️ Clear</button>
+            <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+        </div>
+        
+        <div class="tabs" id="tabs"></div>
+        
+        <div id="tabContents"></div>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+    
+    <script>
+        const departments = {
+            'Produce': ['Asparagus', 'Broccoli', 'Carrots', 'Cauliflower', 'Celery', 'Corn', 'Cucumbers', 'Lettuce/Greens', 'Mushrooms', 'Onions', 'Peppers', 'Jalapeños', 'Serrano peppers', 'Poblano peppers', 'Nopal/Cactus', 'Chayote', 'Yuca/Cassava', 'Potatoes', 'Spinach', 'Squash', 'Tomatoes', 'Tomatillos', 'Zucchini', 'Apples', 'Avocado', 'Bananas', 'Berries', 'Cherries', 'Grapefruit', 'Grapes', 'Kiwi', 'Lemons/Limes', 'Melons', 'Oranges', 'Peaches', 'Nectarines', 'Pears', 'Plums', 'Plantains', 'Mango', 'Papaya', 'Guava'],
+            'Meats & Seafood': ['Bacon/Sausage', 'Beef', 'Chicken/Turkey', 'Ground beef', 'Ham/Pork', 'Hot dogs', 'Lunch meat', 'Catfish', 'Crab', 'Lobster', 'Mussels', 'Oysters', 'Salmon', 'Shrimp', 'Tilapia', 'Tuna'],
+            'Dairy': ['Butter/Margarine', 'Bleu cheese', 'Cheddar cheese', 'Cottage cheese', 'Feta cheese', 'Goat cheese', 'Mozzarella', 'Parmesan', 'Provolone', 'Ricotta', 'Sandwich slices', 'Swiss', 'Eggs', 'Half & half', 'Hummus', 'Milk', 'Sour cream', 'Whipped cream', 'Yogurt'],
+            'Beverages': ['Club soda', 'Drink mix', 'Energy drinks', 'Flavored water', 'Ice teas', 'Juice', 'Lemonade', 'Soda pop', 'Sports drinks', 'Water', 'Alcohol'],
+            'Condiments / Sauces': ['BBQ sauce', 'Gravy', 'Honey', 'Hot sauce', 'Jam/Jelly/Preserves', 'Ketchup/Mustard', 'Mayonnaise', 'Pasta sauce', 'Relish', 'Salad dressing', 'Salsa', 'Soy sauce', 'Steak sauce', 'Syrup', 'Worcestershire sauce'],
+            'Canned Food': ['Applesauce', 'Baked beans', 'Broth', 'Chili', 'Fruit', 'Olives', 'Tinned meats', 'Tuna/Chicken', 'Soups', 'Tomatoes', 'Veggies'],
+            'Plant-Based': ['Beyond', 'Garden', 'Daring', 'MorningStar Farms', 'Impossible', 'Country Crock Butter', 'Violife', 'Just Egg', 'Queso', 'Silk', 'Field Roast', 'Lightlife', 'Daiya'],
+            'Baking & Spices': ['Baking powder', 'Baking soda', 'Bread crumbs', 'Cake/Brownie mix', 'Cake icing/Decor', 'Chocolate chips', 'Cocoa', 'Flour', 'Shortening', 'Sugar', 'Sugar substitute', 'Yeast', 'Basil', 'Black pepper', 'Cilantro', 'Cinnamon', 'Garlic', 'Ginger', 'Mint', 'Oregano', 'Paprika', 'Parsley', 'Red pepper', 'Salt', 'Spice mix', 'Vanilla extract'],
+            'Baked Goods': ['Bagels', 'Croissants', 'Buns', 'Rolls', 'Cake', 'Cookies', 'Donuts', 'Pastries', 'Fresh bread', 'Sliced bread', 'Pie', 'Pita bread', 'Muffins'],
+            'Groceries': ['Bouillon', 'Cereal', 'Coffee/Filters', 'Instant potatoes', 'Lemon/Lime juice', 'Mac & cheese', 'Oatmeal', 'Pancake/Waffle mix', 'Pasta', 'Peanut butter', 'Pickles', 'Rice', 'Tea', 'Tortilla shells', 'Cooking spray', 'Vinegar'],
+            'Frozen': ['Breakfast food', 'Burritos', 'Fish sticks', 'Ice cream/Sorbet', 'Juice concentrate', 'Pizza/Pizza rolls', 'Popsicles', 'Fries/Tattertots', 'TV dinners', 'Vegetables', 'Veggie burgers'],
+            'Snacks': ['Candy/Gum', 'Cookies', 'Crackers', 'Dried fruit', 'Granola bars', 'Trail mix', 'Jerky', 'Nuts/Seeds', 'Popcorn', 'Potato/Corn chips', 'Pretzels', 'Little Debbie'],
+            'Personal Care': ['Antiperspirant', 'Bath/Hand soap', 'Cosmetics', 'Conditioner', 'Cotton swabs/balls', 'Facial cleanser', 'Facial tissue', 'Feminine products', 'Floss', 'Hair gel/spray', 'Lip balm', 'Moisturizing lotion', 'Mouthwash', 'Razors/Shaving', 'Shampoo', 'Sunblock', 'Toilet paper', 'Toothpaste'],
+            'Cleaning': ['Air freshener', 'Bathroom cleaner', 'Bleach/Detergent', 'Dish soap', 'Dishwasher soap', 'Garbage bags', 'Glass cleaner', 'Sponges/Scrubbers'],
+            'Pharmacy': ['Allergy', 'Antibiotic', 'Anti-diarrheal', 'Aspirin', 'Antacid', 'Band-aids', 'Cold/Flu/Sinus', 'Pain reliever', 'Prescription pick-up', 'Supplements', 'Vitamins'],
+            'Baby': ['Baby food/formula', 'Diapers', 'Lotion/Wash', 'Wipes'],
+            'Pets': ['Cat food/treats', 'Cat litter', 'Dog food/treats', 'Flea treatment', 'Shampoo']
+        };
+        
+        let selectedItems = {};
+        let customItems = {};
+        
+        // Initialize
+        window.onload = function() {
+            loadData();
+            renderTabs();
+            
+            if (!localStorage.getItem('groceryWelcomeSeen')) {
+                document.getElementById('welcomeModal').classList.add('active');
+            }
+        };
+        
+        function closeWelcomeModal() {
+            document.getElementById('welcomeModal').classList.remove('active');
+            localStorage.setItem('groceryWelcomeSeen', 'true');
+        }
+        
+        function renderTabs() {
+            const tabsContainer = document.getElementById('tabs');
+            const contentsContainer = document.getElementById('tabContents');
+            
+            tabsContainer.innerHTML = '';
+            contentsContainer.innerHTML = '';
+            
+            // Department tabs
+            Object.keys(departments).forEach((dept, index) => {
+                const tab = document.createElement('button');
+                tab.className = 'tab' + (index === 0 ? ' active' : '');
+                tab.textContent = dept;
+                tab.onclick = () => switchTab(dept);
+                tabsContainer.appendChild(tab);
+                
+                const content = document.createElement('div');
+                content.className = 'tab-content' + (index === 0 ? ' active' : '');
+                content.id = 'tab-' + dept.replace(/[^a-zA-Z0-9]/g, '');
+                content.innerHTML = renderDepartment(dept);
+                contentsContainer.appendChild(content);
+            });
+            
+            // Shopping List tab
+            const listTab = document.createElement('button');
+            listTab.className = 'tab';
+            listTab.textContent = '🛒 Shopping List';
+            listTab.onclick = () => switchTab('shopping-list');
+            tabsContainer.appendChild(listTab);
+            
+            const listContent = document.createElement('div');
+            listContent.className = 'tab-content';
+            listContent.id = 'tab-shopping-list';
+            listContent.innerHTML = renderShoppingList();
+            contentsContainer.appendChild(listContent);
+        }
+        
+        function renderDepartment(dept) {
+            const items = departments[dept];
+            const customs = customItems[dept] || [];
+            
+            let html = `<h2 class="department-title">${dept}</h2>`;
+            html += '<div class="items-grid">';
+            
+            items.forEach(item => {
+                const selected = selectedItems[dept]?.includes(item) ? 'selected' : '';
+                html += `<div class="item ${selected}" onclick="toggleItem('${dept}', '${item}')">${item}</div>`;
+            });
+            
+            customs.forEach(item => {
+                const selected = selectedItems[dept]?.includes(item) ? 'selected' : '';
+                html += `<div class="item ${selected}" onclick="toggleItem('${dept}', '${item}')">${item}</div>`;
+            });
+            
+            html += '</div>';
+            html += `
+                <div class="custom-item-input">
+                    <input type="text" id="custom-${dept.replace(/[^a-zA-Z0-9]/g, '')}" placeholder="Add custom item...">
+                    <button class="btn" onclick="addCustomItem('${dept}')">+ Add</button>
+                </div>
+            `;
+            
+            return html;
+        }
+        
+        function renderShoppingList() {
+            let html = '<h2 class="department-title">🛒 Your Shopping List</h2>';
+            
+            if (Object.keys(selectedItems).length === 0) {
+                return html + '<p style="text-align:center; color:#999; padding:40px;">No items selected yet. Start shopping!</p>';
+            }
+            
+            Object.keys(selectedItems).forEach(dept => {
+                if (selectedItems[dept].length > 0) {
+                    html += `<div class="shopping-list-section">`;
+                    html += `<h3>${dept}</h3><ul>`;
+                    selectedItems[dept].forEach(item => {
+                        html += `<li>${item}</li>`;
+                    });
+                    html += '</ul></div>';
+                }
+            });
+            
+            return html;
+        }
+        
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            const clickedTab = event?.target || document.querySelector('.tab');
+            clickedTab.classList.add('active');
+            
+            if (tabName === 'shopping-list') {
+                document.getElementById('tab-shopping-list').innerHTML = renderShoppingList();
+                document.getElementById('tab-shopping-list').classList.add('active');
+            } else {
+                const tabId = 'tab-' + tabName.replace(/[^a-zA-Z0-9]/g, '');
+                document.getElementById(tabId).classList.add('active');
+            }
+        }
+        
+        function toggleItem(dept, item) {
+            if (!selectedItems[dept]) selectedItems[dept] = [];
+            
+            const index = selectedItems[dept].indexOf(item);
+            if (index > -1) {
+                selectedItems[dept].splice(index, 1);
+            } else {
+                selectedItems[dept].push(item);
+            }
+            
+            saveData();
+            
+            // Just toggle the visual state without re-rendering everything
+            event.target.classList.toggle('selected');
+        }
+        
+        function addCustomItem(dept) {
+            const input = document.getElementById('custom-' + dept.replace(/[^a-zA-Z0-9]/g, ''));
+            const item = input.value.trim();
+            
+            if (!item) return;
+            
+            if (!customItems[dept]) customItems[dept] = [];
+            if (!customItems[dept].includes(item)) {
+                customItems[dept].push(item);
+                saveData();
+                
+                // Get current dept tab ID
+                const deptId = 'tab-' + dept.replace(/[^a-zA-Z0-9]/g, '');
+                document.getElementById(deptId).innerHTML = renderDepartment(dept);
+            }
+            
+            input.value = '';
+        }
+        
+        function saveData() {
+            const data = {
+                selected: selectedItems,
+                custom: customItems
+            };
+            localStorage.setItem('groceryData', JSON.stringify(data));
+            showToast('Saved!');
+        }
+        
+        function loadData() {
+            const saved = localStorage.getItem('groceryData');
+            if (saved) {
+                const data = JSON.parse(saved);
+                selectedItems = data.selected || {};
+                customItems = data.custom || {};
+            }
+        }
+        
+        function exportData() {
+            const data = {
+                selected: selectedItems,
+                custom: customItems
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'grocery-list-' + new Date().toISOString().split('T')[0] + '.json';
+            a.click();
+            showToast('Exported!');
+        }
+        
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    selectedItems = data.selected || {};
+                    customItems = data.custom || {};
+                    saveData();
+                    renderTabs();
+                    showToast('Imported!');
+                } catch (error) {
+                    showToast('Error importing file!');
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        function clearAll() {
+            if (confirm('Clear all selected items and custom items?')) {
+                selectedItems = {};
+                customItems = {};
+                saveData();
+                renderTabs();
+                showToast('Cleared!');
+            }
+        }
+        
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+    </script>
+</body>
+</html>
