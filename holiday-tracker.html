@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Holiday Shopping Guide</title>
+    
+    <style>
+        /* CSS RESET */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* MOBILE OPTIMIZATION */
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 0;
+            line-height: 1.6;
+            color: #2d3748;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        input, button, select, textarea {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+        
+        button, input, select, textarea {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            touch-action: manipulation;
+            font-size: 16px;
+            font-family: inherit;
+        }
+        
+        button:focus, input:focus, select:focus, textarea:focus {
+            outline: 2px solid #667eea;
+            outline-offset: 2px;
+        }
+        
+        /* WELCOME MODAL */
+        .welcome-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .welcome-modal.show {
+            display: flex;
+        }
+        
+        .welcome-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .welcome-content h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #667eea;
+            text-align: center;
+        }
+        
+        .welcome-list {
+            list-style: none;
+            margin: 20px 0;
+        }
+        
+        .welcome-list li {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+        
+        .welcome-list strong {
+            display: block;
+            color: #2d3748;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+        
+        .welcome-content button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            min-height: 44px;
+            transition: transform 0.2s;
+        }
+        
+        .welcome-content button:active {
+            transform: scale(0.98);
+        }
+        
+        /* ACTION BAR */
+        .action-bar {
+            background: white;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        
+        .action-buttons button {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            min-height: 44px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .action-buttons button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .action-buttons button:active {
+            transform: scale(0.98);
+        }
+        
+        .save-status {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            min-height: 20px;
+            transition: opacity 0.3s;
+        }
+        
+        /* CONTAINER */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.95;
+        }
+        
+        /* ADD GIFT FORM */
+        .add-gift-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .add-gift-card h2 {
+            font-size: 22px;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+        
+        .form-grid {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #4a5568;
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group select {
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+            background: white;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #667eea;
+        }
+        
+        .add-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            min-height: 44px;
+            transition: transform 0.2s;
+        }
+        
+        .add-btn:active {
+            transform: scale(0.98);
+        }
+        
+        /* GIFTS LIST */
+        .gifts-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .gifts-section h2 {
+            font-size: 22px;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+        
+        .gift-card {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            position: relative;
+        }
+        
+        .gift-card.bought {
+            border-left-color: #48bb78;
+            background: #f0fff4;
+        }
+        
+        .gift-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+        
+        .gift-recipient {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+            flex: 1;
+        }
+        
+        .delete-btn {
+            background: #fc8181;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            min-height: 44px;
+            font-weight: 600;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .delete-btn:active {
+            background: #f56565;
+        }
+        
+        .gift-idea {
+            font-size: 18px;
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .gift-details {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .gift-detail {
+            display: flex;
+            align-items: center;
+            color: #718096;
+        }
+        
+        .gift-detail strong {
+            color: #4a5568;
+            margin-right: 5px;
+            min-width: 80px;
+        }
+        
+        .gift-checkboxes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            min-height: 44px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background 0.2s;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        .checkbox-group:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            display: none;
+        }
+        
+        .custom-checkbox {
+            width: 28px;
+            height: 28px;
+            border: 3px solid #cbd5e0;
+            border-radius: 6px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .checkbox-group input[type="checkbox"]:checked + .custom-checkbox {
+            background: #667eea;
+            border-color: #667eea;
+        }
+        
+        .checkbox-group input[type="checkbox"]:checked + .custom-checkbox::before {
+            content: '✓';
+        }
+        
+        .checkbox-group label {
+            cursor: pointer;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 15px;
+            -webkit-user-select: none;
+            user-select: none;
+            margin: 0;
+        }
+        
+        .gift-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .gift-tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 16px;
+            font-weight: 600;
+            color: #718096;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .gift-tab:hover {
+            color: #667eea;
+        }
+        
+        .gift-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .recipient-group {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .recipient-group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .recipient-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .recipient-total {
+            font-size: 16px;
+            font-weight: 600;
+            color: #764ba2;
+        }
+        
+        .recipient-gift-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: #f7fafc;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .recipient-gift-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .recipient-gift-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+        
+        .recipient-gift-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            font-size: 14px;
+            color: #4a5568;
+        }
+        
+        .recipient-gift-detail {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .recipient-gift-detail strong {
+            color: #2d3748;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #a0aec0;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .empty-state p {
+            font-size: 18px;
+        }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #718096;
+            font-weight: 600;
+        }
+        
+        /* PRINT STYLES */
+        @media print {
+            .action-bar, .add-gift-card, button, .delete-btn { 
+                display: none !important; 
+            }
+            body { 
+                background: white !important; 
+            }
+            * {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+            .gift-card { 
+                page-break-inside: avoid;
+                border: 1px solid #e2e8f0;
+            }
+            .checkbox-group input[type="checkbox"] {
+                border: 2px solid #000;
+            }
+        }
+        
+        /* RESPONSIVE */
+        @media (min-width: 768px) {
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .form-group:first-child {
+                grid-column: 1 / -1;
+            }
+            
+            .gift-details {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .action-buttons {
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- WELCOME MODAL -->
+    <div id="welcomeModal" class="welcome-modal">
+        <div class="welcome-content">
+            <h2>Welcome to Your Holiday Shopping Guide! 🎁</h2>
+            <ul class="welcome-list">
+                <li>
+                    <strong>✅ Track All Your Holiday Gifts</strong>
+                    Organize recipients, gift ideas, stores, prices, and track what you've bought and wrapped—all in one place!
+                </li>
+                <li>
+                    <strong>💾 Auto-Saves Every 30 Seconds</strong>
+                    Your progress automatically saves. You can also manually save, export backups, or import previous data anytime.
+                </li>
+                <li>
+                    <strong>📱 Works Completely Offline</strong>
+                    Once saved to your device, use it anywhere without internet. Perfect for shopping in stores or on-the-go!
+                </li>
+            </ul>
+            <button onclick="closeWelcome()">Get Started</button>
+        </div>
+    </div>
+    
+    <!-- ACTION BAR -->
+    <div class="action-bar">
+        <div class="action-buttons">
+            <button onclick="saveDataManual()">💾 Save</button>
+            <button onclick="exportData()">⬇️ Export</button>
+            <button onclick="importData()">⬆️ Import</button>
+            <button onclick="window.print()">🖨️ Print</button>
+            <button onclick="clearAllData()">🗑️ Clear</button>
+        </div>
+        <div id="saveStatus" class="save-status"></div>
+    </div>
+    
+    <input type="file" id="fileInput" accept=".json" style="display: none;">
+    
+    <!-- MAIN CONTENT -->
+    <div class="container">
+        <header class="header">
+            <h1>🎄 Holiday Shopping Guide 🎁</h1>
+            <p>Stay organized this holiday season!</p>
+        </header>
+        
+        <!-- STATISTICS -->
+        <div class="stats-bar" id="statsBar">
+            <div class="stat">
+                <div class="stat-number" id="statTotal">0</div>
+                <div class="stat-label">Total Gifts</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="statBought">0</div>
+                <div class="stat-label">Bought</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="statWrapped">0</div>
+                <div class="stat-label">Wrapped</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="statRemaining">0</div>
+                <div class="stat-label">To Buy</div>
+            </div>
+        </div>
+
+        <!-- BUDGET TRACKING -->
+        <div class="add-gift-card" style="margin-bottom: 20px;">
+            <h2>💰 Budget Tracker</h2>
+            <div class="form-grid" style="margin-bottom: 15px;">
+                <div class="form-group">
+                    <label for="totalBudget">Total Budget</label>
+                    <input type="number" id="totalBudget" placeholder="e.g., 500" step="0.01" onchange="updateBudget()">
+                </div>
+                <div class="form-group">
+                    <label>Total Spent</label>
+                    <input type="text" id="totalSpent" readonly style="background: #f0f0f0; color: #333; font-weight: bold;">
+                </div>
+                <div class="form-group">
+                    <label>Remaining Budget</label>
+                    <input type="text" id="remainingBudget" readonly style="background: #f0f0f0; color: #333; font-weight: bold;">
+                </div>
+            </div>
+            <div id="budgetBar" style="width: 100%; height: 30px; background: #e0e0e0; border-radius: 15px; overflow: hidden; position: relative;">
+                <div id="budgetProgress" style="height: 100%; background: linear-gradient(90deg, #27ae60 0%, #f39c12 70%, #e74c3c 100%); width: 0%; transition: width 0.3s ease;"></div>
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; color: #333; font-size: 14px;" id="budgetPercent">0%</div>
+            </div>
+        </div>
+        
+        <!-- ADD GIFT FORM -->
+        <div class="add-gift-card">
+            <h2>➕ Add New Gift</h2>
+            <form id="addGiftForm" onsubmit="return false;">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="recipient">Recipient Name *</label>
+                        <input type="text" id="recipient" required placeholder="e.g., Mom, Dad, Sarah">
+                    </div>
+                    <div class="form-group">
+                        <label for="giftIdea">Gift Idea *</label>
+                        <input type="text" id="giftIdea" required placeholder="e.g., Wireless headphones">
+                    </div>
+                    <div class="form-group">
+                        <label for="store">Store / Website</label>
+                        <input type="text" id="store" placeholder="e.g., Amazon, Target">
+                    </div>
+                    <div class="form-group">
+                        <label for="itemLink">Item Link / URL</label>
+                        <input type="url" id="itemLink" placeholder="https://example.com/product">
+                    </div>
+                    <div class="form-group">
+                        <label for="price">Price</label>
+                        <input type="text" id="price" placeholder="e.g., $49.99">
+                    </div>
+                    <div class="form-group">
+                        <label for="shippingTo">Ship To</label>
+                        <select id="shippingTo">
+                            <option value="none">Not shipping</option>
+                            <option value="pickup">Pick-up</option>
+                            <option value="buyer">Ship to me</option>
+                            <option value="recipient">Ship to recipient</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" class="add-btn" id="addGiftBtn" onclick="addGift()">Add Gift to List</button>
+            </form>
+        </div>
+        
+        <!-- GIFTS LIST -->
+        <div class="gifts-section">
+            <h2>📝 Your Gift List</h2>
+            
+            <div class="gift-tabs">
+                <button class="gift-tab active" onclick="switchTab('all')">All Gifts</button>
+                <button class="gift-tab" onclick="switchTab('recipient')">By Recipient</button>
+            </div>
+            
+            <div id="giftsList"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Platform detection
+        const platform = {
+            isIOS: /iPad|iPhone|iPod/.test(navigator.userAgent),
+            isAndroid: /Android/.test(navigator.userAgent),
+            isMobile: /Mobile|Android|iPhone/.test(navigator.userAgent),
+            isTouch: 'ontouchstart' in window || navigator.maxTouchPoints > 0
+        };
+        
+        // Check localStorage
+        if (!window.localStorage) {
+            alert('Warning: LocalStorage not available. Data will not be saved.');
+        }
+        
+        // Data storage
+        let shoppingData = {
+            gifts: [],
+            budget: 0,
+            lastSaved: null
+        };
+        
+        // Track current tab view
+        let currentTab = 'all';
+        
+        // Initialize
+        window.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            renderGifts();
+            updateStats();
+            updateBudgetDisplay();
+            
+            if (!shoppingData.lastSaved) {
+                document.getElementById('welcomeModal').classList.add('show');
+            }
+            
+            setInterval(autoSave, 30000);
+            
+            document.getElementById('fileInput').addEventListener('change', handleFileImport);
+        });
+        
+        // Welcome modal
+        function closeWelcome() {
+            document.getElementById('welcomeModal').classList.remove('show');
+            saveData();
+        }
+        
+        // Load data
+        function loadData() {
+            try {
+                const saved = localStorage.getItem('holidayShoppingData');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    shoppingData.gifts = parsed.gifts || [];
+                    shoppingData.budget = parsed.budget || 0;
+                    shoppingData.lastSaved = parsed.lastSaved || null;
+                    
+                    // Populate budget field
+                    if (shoppingData.budget) {
+                        document.getElementById('totalBudget').value = shoppingData.budget;
+                    }
+                }
+            } catch (error) {
+                console.error('Load error:', error);
+            }
+        }
+        
+        // Save data
+        function saveData() {
+            try {
+                shoppingData.lastSaved = new Date().toISOString();
+                localStorage.setItem('holidayShoppingData', JSON.stringify(shoppingData));
+                return true;
+            } catch (error) {
+                console.error('Save error:', error);
+                return false;
+            }
+        }
+        
+        // Manual save with feedback
+        function saveDataManual() {
+            if (saveData()) {
+                showSaveStatus('✓ Saved successfully!', true);
+            } else {
+                showSaveStatus('⚠️ Error saving', false);
+            }
+        }
+        
+        // Auto-save
+        function autoSave() {
+            if (shoppingData.gifts.length > 0) {
+                saveData();
+            }
+        }
+        
+        // Export
+        function exportData() {
+            try {
+                const data = {
+                    ...shoppingData,
+                    exportDate: new Date().toISOString(),
+                    version: '1.0'
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `holiday-shopping-backup-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                showSaveStatus('✓ Exported successfully!', true);
+            } catch (error) {
+                console.error('Export error:', error);
+                showSaveStatus('⚠️ Export failed', false);
+            }
+        }
+        
+        // Import
+        function importData() {
+            document.getElementById('fileInput').click();
+        }
+        
+        function handleFileImport(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    
+                    if (!data.gifts || !Array.isArray(data.gifts)) {
+                        throw new Error('Invalid format');
+                    }
+                    
+                    shoppingData.gifts = data.gifts;
+                    shoppingData.budget = data.budget || 0;
+                    shoppingData.lastSaved = data.lastSaved || null;
+                    
+                    // Update budget field
+                    if (shoppingData.budget) {
+                        document.getElementById('totalBudget').value = shoppingData.budget;
+                    }
+                    
+                    saveData();
+                    renderGifts();
+                    updateStats();
+                    updateBudgetDisplay();
+                    showSaveStatus('✓ Imported successfully!', true);
+                } catch (error) {
+                    console.error('Import error:', error);
+                    showSaveStatus('⚠️ Invalid file', false);
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        }
+        
+        // Clear all
+        function clearAllData() {
+            if (confirm('⚠️ Clear all gift data? This cannot be undone.\n\nConsider exporting first!')) {
+                localStorage.removeItem('holidayShoppingData');
+                shoppingData = { gifts: [], budget: 0, lastSaved: null };
+                document.getElementById('totalBudget').value = '';
+                renderGifts();
+                updateStats();
+                updateBudgetDisplay();
+                showSaveStatus('✓ Data cleared', true);
+            }
+        }
+        
+        // Show status
+        function showSaveStatus(message, isSuccess) {
+            const status = document.getElementById('saveStatus');
+            status.textContent = message;
+            status.style.color = isSuccess ? '#48bb78' : '#f56565';
+            status.style.opacity = '1';
+            
+            setTimeout(() => {
+                status.style.opacity = '0';
+            }, 3000);
+        }
+        
+        // Add gift
+        let editingGiftId = null;
+
+        function addGift() {
+            const recipient = document.getElementById('recipient').value.trim();
+            const giftIdea = document.getElementById('giftIdea').value.trim();
+            
+            if (!recipient || !giftIdea) {
+                alert('Please fill in recipient name and gift idea');
+                return;
+            }
+            
+            if (editingGiftId) {
+                // UPDATE MODE
+                const gift = shoppingData.gifts.find(g => g.id === editingGiftId);
+                if (gift) {
+                    gift.recipient = recipient;
+                    gift.giftIdea = giftIdea;
+                    gift.store = document.getElementById('store').value.trim();
+                    gift.itemLink = document.getElementById('itemLink').value.trim();
+                    gift.price = document.getElementById('price').value.trim();
+                    gift.shippingTo = document.getElementById('shippingTo').value;
+                }
+                editingGiftId = null;
+                document.getElementById('addGiftBtn').textContent = 'Add Gift to List';
+                showSaveStatus('✓ Gift updated!', true);
+            } else {
+                // ADD MODE
+                const gift = {
+                    id: 'gift_' + Date.now() + '_' + Math.floor(Math.random() * 10000),
+                    recipient: recipient,
+                    giftIdea: giftIdea,
+                    store: document.getElementById('store').value.trim(),
+                    itemLink: document.getElementById('itemLink').value.trim(),
+                    price: document.getElementById('price').value.trim(),
+                    shippingTo: document.getElementById('shippingTo').value,
+                    bought: false,
+                    wrapped: false,
+                    addedDate: new Date().toISOString()
+                };
+                
+                shoppingData.gifts.unshift(gift);
+                showSaveStatus('✓ Gift added!', true);
+            }
+            
+            saveData();
+            renderGifts();
+            updateStats();
+            updateBudgetDisplay();
+            
+            document.getElementById('addGiftForm').reset();
+        }
+
+        function editGift(giftId) {
+            const gift = shoppingData.gifts.find(g => g.id === giftId);
+            if (!gift) return;
+
+            // Populate form
+            document.getElementById('recipient').value = gift.recipient;
+            document.getElementById('giftIdea').value = gift.giftIdea;
+            document.getElementById('store').value = gift.store || '';
+            document.getElementById('itemLink').value = gift.itemLink || '';
+            document.getElementById('price').value = gift.price || '';
+            document.getElementById('shippingTo').value = gift.shippingTo || 'none';
+
+            // Set edit mode
+            editingGiftId = giftId;
+            document.getElementById('addGiftBtn').textContent = '💾 Update Gift';
+
+            // Scroll to form
+            document.getElementById('addGiftForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        // Delete gift
+        function deleteGift(giftId) {
+            if (confirm('Delete this gift from your list?')) {
+                shoppingData.gifts = shoppingData.gifts.filter(g => g.id !== giftId);
+                saveData();
+                renderGifts();
+                updateStats();
+                updateBudgetDisplay();
+                showSaveStatus('✓ Gift deleted', true);
+            }
+        }
+        
+        // Toggle bought
+        function toggleBought(giftId) {
+            const gift = shoppingData.gifts.find(g => g.id === giftId);
+            if (gift) {
+                gift.bought = !gift.bought;
+                saveData();
+                renderGifts();
+                updateStats();
+            }
+        }
+        
+        // Toggle wrapped
+        function toggleWrapped(giftId) {
+            const gift = shoppingData.gifts.find(g => g.id === giftId);
+            if (gift) {
+                gift.wrapped = !gift.wrapped;
+                saveData();
+                renderGifts();
+                updateStats();
+            }
+        }
+        
+        // Render gifts
+        function renderGifts() {
+            if (currentTab === 'recipient') {
+                renderByRecipient();
+            } else {
+                renderAllGifts();
+            }
+        }
+        
+        // Render all gifts in list view
+        function renderAllGifts() {
+            const container = document.getElementById('giftsList');
+            
+            if (shoppingData.gifts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎁</div>
+                        <p>No gifts added yet. Start by adding your first gift above!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            shoppingData.gifts.forEach(gift => {
+                const card = document.createElement('div');
+                card.className = 'gift-card' + (gift.bought ? ' bought' : '');
+                
+                // Format shipping text
+                let shippingText = '';
+                if (gift.shippingTo === 'buyer') shippingText = 'Ship to me';
+                else if (gift.shippingTo === 'recipient') shippingText = 'Ship to recipient';
+                else if (gift.shippingTo === 'pickup') shippingText = 'Pick-up';
+                
+                card.innerHTML = `
+                    <div class="gift-header">
+                        <div class="gift-recipient">${escapeHtml(gift.recipient)}</div>
+                        <div style="display: flex; gap: 5px;">
+                            <button class="delete-btn" onclick="editGift('${gift.id}')" style="background: #667eea;">✏️ Edit</button>
+                            <button class="delete-btn" onclick="deleteGift('${gift.id}')">🗑️ Delete</button>
+                        </div>
+                    </div>
+                    
+                    <div class="gift-idea">${escapeHtml(gift.giftIdea)}</div>
+                    
+                    <div class="gift-details">
+                        ${gift.store ? `<div class="gift-detail"><strong>Store:</strong> ${escapeHtml(gift.store)}</div>` : ''}
+                        ${gift.itemLink ? `<div class="gift-detail"><strong>Link:</strong> <a href="${escapeHtml(gift.itemLink)}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: underline;">View Item</a></div>` : ''}
+                        ${gift.price ? `<div class="gift-detail"><strong>Price:</strong> ${escapeHtml(gift.price)}</div>` : ''}
+                        ${shippingText ? `<div class="gift-detail"><strong>Shipping:</strong> ${shippingText}</div>` : ''}
+                    </div>
+                    
+                    <div class="gift-checkboxes">
+                        <div class="checkbox-group" onclick="toggleBought('${gift.id}')">
+                            <input type="checkbox" id="bought-${gift.id}" ${gift.bought ? 'checked' : ''} onclick="event.stopPropagation()">
+                            <span class="custom-checkbox"></span>
+                            <label>Bought</label>
+                        </div>
+                        <div class="checkbox-group" onclick="toggleWrapped('${gift.id}')">
+                            <input type="checkbox" id="wrapped-${gift.id}" ${gift.wrapped ? 'checked' : ''} onclick="event.stopPropagation()">
+                            <span class="custom-checkbox"></span>
+                            <label>Wrapped</label>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+        
+        // Render gifts grouped by recipient
+        function renderByRecipient() {
+            const container = document.getElementById('giftsList');
+            
+            if (shoppingData.gifts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎁</div>
+                        <p>No gifts added yet. Start by adding your first gift above!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Group gifts by recipient
+            const groupedGifts = {};
+            shoppingData.gifts.forEach(gift => {
+                if (!groupedGifts[gift.recipient]) {
+                    groupedGifts[gift.recipient] = [];
+                }
+                groupedGifts[gift.recipient].push(gift);
+            });
+            
+            container.innerHTML = '';
+            
+            // Sort recipients alphabetically
+            const recipients = Object.keys(groupedGifts).sort();
+            
+            recipients.forEach(recipientName => {
+                const gifts = groupedGifts[recipientName];
+                
+                // Calculate total for this recipient
+                let recipientTotal = 0;
+                gifts.forEach(gift => {
+                    if (gift.price) {
+                        const priceMatch = gift.price.match(/[\d,]+\.?\d*/);
+                        if (priceMatch) {
+                            recipientTotal += parseFloat(priceMatch[0].replace(/,/g, ''));
+                        }
+                    }
+                });
+                
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'recipient-group';
+                
+                let groupHTML = `
+                    <div class="recipient-group-header">
+                        <div class="recipient-name">${escapeHtml(recipientName)}</div>
+                        <div class="recipient-total">${gifts.length} gift${gifts.length !== 1 ? 's' : ''} • $${recipientTotal.toFixed(2)}</div>
+                    </div>
+                `;
+                
+                gifts.forEach(gift => {
+                    // Format shipping text
+                    let shippingText = '';
+                    if (gift.shippingTo === 'buyer') shippingText = 'Ship to me';
+                    else if (gift.shippingTo === 'recipient') shippingText = 'Ship to recipient';
+                    else if (gift.shippingTo === 'pickup') shippingText = 'Pick-up';
+                    
+                    // Build status badges
+                    let statusBadges = '';
+                    if (gift.bought) statusBadges += '<span style="background: #48bb78; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">✓ Bought</span>';
+                    if (gift.wrapped) statusBadges += '<span style="background: #667eea; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">✓ Wrapped</span>';
+                    
+                    groupHTML += `
+                        <div class="recipient-gift-item">
+                            <div class="recipient-gift-name">${escapeHtml(gift.giftIdea)}</div>
+                            <div class="recipient-gift-details">
+                                ${gift.price ? `<div class="recipient-gift-detail"><strong>Price:</strong> ${escapeHtml(gift.price)}</div>` : ''}
+                                ${gift.store ? `<div class="recipient-gift-detail"><strong>Store:</strong> ${escapeHtml(gift.store)}</div>` : ''}
+                                ${shippingText ? `<div class="recipient-gift-detail"><strong>Shipping:</strong> ${shippingText}</div>` : ''}
+                                ${gift.itemLink ? `<div class="recipient-gift-detail"><a href="${escapeHtml(gift.itemLink)}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: underline;">View Item</a></div>` : ''}
+                            </div>
+                            ${statusBadges ? `<div style="margin-top: 8px; display: flex; gap: 5px;">${statusBadges}</div>` : ''}
+                        </div>
+                    `;
+                });
+                
+                groupDiv.innerHTML = groupHTML;
+                container.appendChild(groupDiv);
+            });
+        }
+        
+        // Switch between tabs
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Update tab styles
+            document.querySelectorAll('.gift-tab').forEach(tabBtn => {
+                tabBtn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Re-render gifts
+            renderGifts();
+        }
+        
+        // Update stats
+        function updateStats() {
+            const total = shoppingData.gifts.length;
+            const bought = shoppingData.gifts.filter(g => g.bought).length;
+            const wrapped = shoppingData.gifts.filter(g => g.wrapped).length;
+            const remaining = total - bought;
+            
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statBought').textContent = bought;
+            document.getElementById('statWrapped').textContent = wrapped;
+            document.getElementById('statRemaining').textContent = remaining;
+        }
+
+        // Budget functions
+        function updateBudget() {
+            shoppingData.budget = parseFloat(document.getElementById('totalBudget').value) || 0;
+            saveData();
+            updateBudgetDisplay();
+        }
+
+        function updateBudgetDisplay() {
+            // Calculate total spent from prices
+            let totalSpent = 0;
+            shoppingData.gifts.forEach(gift => {
+                if (gift.price) {
+                    // Extract number from price string (e.g., "$49.99" or "49.99")
+                    const priceMatch = gift.price.match(/[\d.]+/);
+                    if (priceMatch) {
+                        totalSpent += parseFloat(priceMatch[0]) || 0;
+                    }
+                }
+            });
+
+            const budget = shoppingData.budget || 0;
+            const remaining = budget - totalSpent;
+            const percentSpent = budget > 0 ? (totalSpent / budget) * 100 : 0;
+
+            // Update display
+            document.getElementById('totalSpent').value = '$' + totalSpent.toFixed(2);
+            document.getElementById('remainingBudget').value = '$' + remaining.toFixed(2);
+            document.getElementById('budgetPercent').textContent = Math.round(percentSpent) + '%';
+            document.getElementById('budgetProgress').style.width = Math.min(percentSpent, 100) + '%';
+
+            // Change color based on budget status
+            const remainingField = document.getElementById('remainingBudget');
+            if (remaining < 0) {
+                remainingField.style.color = '#e74c3c';
+                remainingField.style.fontWeight = 'bold';
+            } else if (percentSpent > 90) {
+                remainingField.style.color = '#f39c12';
+                remainingField.style.fontWeight = 'bold';
+            } else {
+                remainingField.style.color = '#27ae60';
+                remainingField.style.fontWeight = 'bold';
+            }
+        }
+        
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
