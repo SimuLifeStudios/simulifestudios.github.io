@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calorie & Nutrition Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 52%, #2BFF88 90%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(250, 139, 255, 0.4);
+        }
+
+        .tab:hover:not(.active) {
+            background: #e0e0e0;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(250, 139, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(250, 139, 255, 0.4);
+        }
+
+        .stat-card.calories {
+            background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 100%);
+        }
+
+        .stat-card.protein {
+            background: linear-gradient(135deg, #2BFF88 0%, #00d4ff 100%);
+        }
+
+        .stat-card.carbs {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stat-card.fat {
+            background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 100%);
+        }
+
+        .stat-card.weight {
+            background: linear-gradient(135deg, #2BFF88 0%, #2BD2FF 100%);
+        }
+
+        .stat-card h3 {
+            font-size: 0.9em;
+            margin-bottom: 12px;
+            opacity: 0.95;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .section {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .section h2 {
+            background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        input, select, textarea {
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #FA8BFF;
+            box-shadow: 0 0 0 3px rgba(250, 139, 255, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(250, 139, 255, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(250, 139, 255, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-small {
+            padding: 8px 20px;
+            font-size: 0.9em;
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 100%);
+            margin-right: 10px;
+        }
+
+        .btn-edit:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #f5576c 0%, #fa709a 100%);
+        }
+
+        .btn-delete:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .entry-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .entry-card:hover {
+            box-shadow: 0 8px 30px rgba(250, 139, 255, 0.15);
+            transform: translateY(-3px);
+            border-color: rgba(250, 139, 255, 0.3);
+        }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .entry-date {
+            background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        .entry-meal {
+            background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 100%);
+            color: white;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .entry-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .entry-detail {
+            display: flex;
+            flex-direction: column;
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 12px;
+        }
+
+        .entry-detail-label {
+            color: #888;
+            font-size: 0.8em;
+            margin-bottom: 5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .entry-detail-value {
+            color: #333;
+            font-weight: 700;
+            font-size: 1.2em;
+        }
+
+        .entry-food {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .entry-notes {
+            color: #666;
+            font-style: italic;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 2px solid #f0f0f0;
+            line-height: 1.5;
+        }
+
+        .weight-entry {
+            background: white;
+            border-radius: 20px;
+            padding: 20px 25px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .weight-entry:hover {
+            box-shadow: 0 8px 30px rgba(43, 255, 136, 0.15);
+            transform: translateY(-3px);
+            border-color: rgba(43, 255, 136, 0.3);
+        }
+
+        .weight-info {
+            flex-grow: 1;
+        }
+
+        .weight-date {
+            background: linear-gradient(135deg, #2BFF88 0%, #2BD2FF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+
+        .weight-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .weight-notes-text {
+            margin-top: 10px;
+            color: #666;
+            font-style: italic;
+            line-height: 1.5;
+        }
+
+        .filter-bar {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            align-items: end;
+        }
+
+        .no-entries {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+            font-size: 1.2em;
+        }
+
+        .no-entries h3 {
+            background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+
+        .macro-bars {
+            margin-top: 20px;
+        }
+
+        .macro-bar {
+            margin-bottom: 20px;
+        }
+
+        .macro-bar-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .macro-bar-container {
+            background: #f0f0f0;
+            height: 24px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .macro-bar-fill {
+            height: 100%;
+            border-radius: 12px;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+
+        .macro-bar-fill.protein {
+            background: linear-gradient(90deg, #2BFF88 0%, #00d4ff 100%);
+        }
+
+        .macro-bar-fill.carbs {
+            background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .macro-bar-fill.fat {
+            background: linear-gradient(90deg, #FA8BFF 0%, #2BD2FF 100%);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .form-grid, .filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .entry-details {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🥗 Calorie & Nutrition Tracker</h1>
+            <p>Track your meals, calories, macros, and weight loss journey</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Daily Stats -->
+            <div class="stats-grid">
+                <div class="stat-card calories">
+                    <h3>Total Calories</h3>
+                    <div class="value" id="totalCalories">0</div>
+                </div>
+                <div class="stat-card protein">
+                    <h3>Protein (g)</h3>
+                    <div class="value" id="totalProtein">0</div>
+                </div>
+                <div class="stat-card carbs">
+                    <h3>Carbs (g)</h3>
+                    <div class="value" id="totalCarbs">0</div>
+                </div>
+                <div class="stat-card fat">
+                    <h3>Fat (g)</h3>
+                    <div class="value" id="totalFat">0</div>
+                </div>
+                <div class="stat-card weight">
+                    <h3>Current Weight</h3>
+                    <div class="value" id="currentWeight">--</div>
+                </div>
+            </div>
+
+            <!-- Macro Progress Bars -->
+            <div class="section">
+                <h2>Daily Macro Goals</h2>
+                <div class="macro-bars">
+                    <div class="macro-bar">
+                        <div class="macro-bar-label">
+                            <span>Protein</span>
+                            <span id="proteinProgress">0 / 0g</span>
+                        </div>
+                        <div class="macro-bar-container">
+                            <div class="macro-bar-fill protein" id="proteinBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="macro-bar">
+                        <div class="macro-bar-label">
+                            <span>Carbs</span>
+                            <span id="carbsProgress">0 / 0g</span>
+                        </div>
+                        <div class="macro-bar-container">
+                            <div class="macro-bar-fill carbs" id="carbsBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="macro-bar">
+                        <div class="macro-bar-label">
+                            <span>Fat</span>
+                            <span id="fatProgress">0 / 0g</span>
+                        </div>
+                        <div class="macro-bar-container">
+                            <div class="macro-bar-fill fat" id="fatBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('entry')">Food & Weight Entry</button>
+                <button class="tab" onclick="switchTab('food')">Food Entries</button>
+                <button class="tab" onclick="switchTab('weight')">Weight History</button>
+                <button class="tab" onclick="switchTab('goals')">Daily Goals</button>
+            </div>
+
+            <!-- Entry Tab -->
+            <div id="entryTab" class="tab-content active">>
+                <!-- Weight Entry Section -->
+                <div class="section">
+                    <h2>⚖️ Weight Tracking</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="weightDate">Date</label>
+                            <input type="date" id="weightDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="weight">Weight (lbs)</label>
+                            <input type="number" id="weight" step="0.1" placeholder="Enter weight" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="weightNotes">Notes (optional)</label>
+                            <textarea id="weightNotes" placeholder="How do you feel? Any observations?"></textarea>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="addWeightEntry()">Log Weight</button>
+                </div>
+
+                <!-- Food Entry Section -->
+                <div class="section">
+                    <h2>🍽️ Food Entry</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="foodDate">Date</label>
+                            <input type="date" id="foodDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="mealType">Meal Type</label>
+                            <select id="mealType" required>
+                                <option value="">Select Meal</option>
+                                <option value="Breakfast">Breakfast</option>
+                                <option value="Lunch">Lunch</option>
+                                <option value="Dinner">Dinner</option>
+                                <option value="Snack">Snack</option>
+                                <option value="Liquid">Liquid/Shake</option>
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="foodName">Food/Item Name</label>
+                            <input type="text" id="foodName" placeholder="What did you eat?" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="servingSize">Serving Size (oz)</label>
+                            <input type="number" id="servingSize" step="0.1" placeholder="Ounces">
+                        </div>
+                        <div class="form-group">
+                            <label for="calories">Calories</label>
+                            <input type="number" id="calories" placeholder="Calories" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="protein">Protein (g)</label>
+                            <input type="number" id="protein" step="0.1" placeholder="Grams" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="carbs">Carbs (g)</label>
+                            <input type="number" id="carbs" step="0.1" placeholder="Grams" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="fat">Fat (g)</label>
+                            <input type="number" id="fat" step="0.1" placeholder="Grams" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="foodNotes">Notes (optional)</label>
+                            <textarea id="foodNotes" placeholder="Any additional details..."></textarea>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="addFoodEntry()">Add Food Entry</button>
+                </div>
+            </div>
+
+            <!-- Food Entries Tab -->
+            <div id="foodTab" class="tab-content">
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <div class="filter-grid">
+                        <div class="form-group">
+                            <label for="filterDate">Filter by Date</label>
+                            <input type="date" id="filterDate" onchange="filterEntries()">
+                        </div>
+                        <div class="form-group">
+                            <label for="filterMeal">Filter by Meal</label>
+                            <select id="filterMeal" onchange="filterEntries()">
+                                <option value="">All Meals</option>
+                                <option value="Breakfast">Breakfast</option>
+                                <option value="Lunch">Lunch</option>
+                                <option value="Dinner">Dinner</option>
+                                <option value="Snack">Snack</option>
+                                <option value="Liquid">Liquid/Shake</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <button class="btn" onclick="clearFilters()">Clear Filters</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Food Entries List -->
+                <div class="section">
+                    <h2>📊 Food Entries</h2>
+                    <div id="foodEntries"></div>
+                </div>
+            </div>
+
+            <!-- Weight History Tab -->
+            <div id="weightTab" class="tab-content">
+                <div class="section">
+                    <h2>⚖️ Weight History</h2>
+                    <div id="weightHistory"></div>
+                </div>
+            </div>
+
+            <!-- Daily Goals Tab -->
+            <div id="goalsTab" class="tab-content">
+                <div class="section">
+                    <h2>🎯 Daily Goals</h2>>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="calorieGoal">Calorie Goal</label>
+                            <input type="number" id="calorieGoal" placeholder="Daily calorie target">
+                        </div>
+                        <div class="form-group">
+                            <label for="proteinGoal">Protein Goal (g)</label>
+                            <input type="number" id="proteinGoal" placeholder="Daily protein target">
+                        </div>
+                        <div class="form-group">
+                            <label for="carbsGoal">Carbs Goal (g)</label>
+                            <input type="number" id="carbsGoal" placeholder="Daily carbs target">
+                        </div>
+                        <div class="form-group">
+                            <label for="fatGoal">Fat Goal (g)</label>
+                            <input type="number" id="fatGoal" placeholder="Daily fat target">
+                        </div>
+                    </div>
+                    <button class="btn" onclick="saveGoals()">Save Goals</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching function
+        function switchTab(tab) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tabBtn => {
+                tabBtn.classList.remove('active');
+            });
+
+            // Show selected tab content
+            if (tab === 'entry') {
+                document.getElementById('entryTab').classList.add('active');
+                document.querySelector('.tabs .tab:nth-child(1)').classList.add('active');
+            } else if (tab === 'food') {
+                document.getElementById('foodTab').classList.add('active');
+                document.querySelector('.tabs .tab:nth-child(2)').classList.add('active');
+            } else if (tab === 'weight') {
+                document.getElementById('weightTab').classList.add('active');
+                document.querySelector('.tabs .tab:nth-child(3)').classList.add('active');
+            } else if (tab === 'goals') {
+                document.getElementById('goalsTab').classList.add('active');
+                document.querySelector('.tabs .tab:nth-child(4)').classList.add('active');
+            }
+        }
+
+        // Initialize storage
+        let foodEntries = JSON.parse(localStorage.getItem('calorieTrackerFood')) || [];
+        let weightEntries = JSON.parse(localStorage.getItem('calorieTrackerWeight')) || [];
+        let goals = JSON.parse(localStorage.getItem('calorieTrackerGoals')) || {
+            calories: 1500,
+            protein: 100,
+            carbs: 150,
+            fat: 50
+        };
+
+        // Set today's date by default
+        document.getElementById('foodDate').valueAsDate = new Date();
+        document.getElementById('weightDate').valueAsDate = new Date();
+
+        // Load goals
+        document.getElementById('calorieGoal').value = goals.calories;
+        document.getElementById('proteinGoal').value = goals.protein;
+        document.getElementById('carbsGoal').value = goals.carbs;
+        document.getElementById('fatGoal').value = goals.fat;
+
+        // Save goals
+        function saveGoals() {
+            goals = {
+                calories: parseFloat(document.getElementById('calorieGoal').value) || 1500,
+                protein: parseFloat(document.getElementById('proteinGoal').value) || 100,
+                carbs: parseFloat(document.getElementById('carbsGoal').value) || 150,
+                fat: parseFloat(document.getElementById('fatGoal').value) || 50
+            };
+            localStorage.setItem('calorieTrackerGoals', JSON.stringify(goals));
+            updateStats();
+            alert('Goals saved successfully!');
+        }
+
+        // Add weight entry
+        function addWeightEntry() {
+            const date = document.getElementById('weightDate').value;
+            const weight = parseFloat(document.getElementById('weight').value);
+            const notes = document.getElementById('weightNotes').value;
+
+            if (!date || !weight) {
+                alert('Please fill in date and weight');
+                return;
+            }
+
+            const entry = {
+                id: Date.now(),
+                date,
+                weight,
+                notes
+            };
+
+            weightEntries.unshift(entry);
+            localStorage.setItem('calorieTrackerWeight', JSON.stringify(weightEntries));
+
+            // Clear form
+            document.getElementById('weight').value = '';
+            document.getElementById('weightNotes').value = '';
+
+            displayWeightHistory();
+            updateStats();
+            alert('Weight entry added!');
+        }
+
+        // Add food entry
+        function addFoodEntry() {
+            const date = document.getElementById('foodDate').value;
+            const mealType = document.getElementById('mealType').value;
+            const foodName = document.getElementById('foodName').value;
+            const servingSize = parseFloat(document.getElementById('servingSize').value) || 0;
+            const calories = parseFloat(document.getElementById('calories').value);
+            const protein = parseFloat(document.getElementById('protein').value);
+            const carbs = parseFloat(document.getElementById('carbs').value);
+            const fat = parseFloat(document.getElementById('fat').value);
+            const notes = document.getElementById('foodNotes').value;
+
+            if (!date || !mealType || !foodName || isNaN(calories) || isNaN(protein) || isNaN(carbs) || isNaN(fat)) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            const entry = {
+                id: Date.now(),
+                date,
+                mealType,
+                foodName,
+                servingSize,
+                calories,
+                protein,
+                carbs,
+                fat,
+                notes
+            };
+
+            foodEntries.unshift(entry);
+            localStorage.setItem('calorieTrackerFood', JSON.stringify(foodEntries));
+
+            // Clear form
+            document.getElementById('foodName').value = '';
+            document.getElementById('servingSize').value = '';
+            document.getElementById('calories').value = '';
+            document.getElementById('protein').value = '';
+            document.getElementById('carbs').value = '';
+            document.getElementById('fat').value = '';
+            document.getElementById('foodNotes').value = '';
+            document.getElementById('mealType').value = '';
+
+            displayFoodEntries();
+            updateStats();
+            alert('Food entry added!');
+        }
+
+        // Edit food entry
+        function editFoodEntry(id) {
+            const entry = foodEntries.find(e => e.id === id);
+            if (!entry) return;
+
+            document.getElementById('foodDate').value = entry.date;
+            document.getElementById('mealType').value = entry.mealType;
+            document.getElementById('foodName').value = entry.foodName;
+            document.getElementById('servingSize').value = entry.servingSize;
+            document.getElementById('calories').value = entry.calories;
+            document.getElementById('protein').value = entry.protein;
+            document.getElementById('carbs').value = entry.carbs;
+            document.getElementById('fat').value = entry.fat;
+            document.getElementById('foodNotes').value = entry.notes;
+
+            deleteFoodEntry(id, true);
+            switchTab('entry');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Delete food entry
+        function deleteFoodEntry(id, skipConfirm = false) {
+            if (skipConfirm || confirm('Are you sure you want to delete this entry?')) {
+                foodEntries = foodEntries.filter(e => e.id !== id);
+                localStorage.setItem('calorieTrackerFood', JSON.stringify(foodEntries));
+                displayFoodEntries();
+                updateStats();
+            }
+        }
+
+        // Edit weight entry
+        function editWeightEntry(id) {
+            const entry = weightEntries.find(e => e.id === id);
+            if (!entry) return;
+
+            document.getElementById('weightDate').value = entry.date;
+            document.getElementById('weight').value = entry.weight;
+            document.getElementById('weightNotes').value = entry.notes;
+
+            deleteWeightEntry(id, true);
+            switchTab('entry');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Delete weight entry
+        function deleteWeightEntry(id, skipConfirm = false) {
+            if (skipConfirm || confirm('Are you sure you want to delete this weight entry?')) {
+                weightEntries = weightEntries.filter(e => e.id !== id);
+                localStorage.setItem('calorieTrackerWeight', JSON.stringify(weightEntries));
+                displayWeightHistory();
+                updateStats();
+            }
+        }
+
+        // Update stats
+        function updateStats() {
+            const today = new Date().toISOString().split('T')[0];
+            const filterDate = document.getElementById('filterDate').value || today;
+
+            const todayEntries = foodEntries.filter(e => e.date === filterDate);
+
+            const totalCalories = todayEntries.reduce((sum, e) => sum + e.calories, 0);
+            const totalProtein = todayEntries.reduce((sum, e) => sum + e.protein, 0);
+            const totalCarbs = todayEntries.reduce((sum, e) => sum + e.carbs, 0);
+            const totalFat = todayEntries.reduce((sum, e) => sum + e.fat, 0);
+
+            document.getElementById('totalCalories').textContent = totalCalories.toFixed(0);
+            document.getElementById('totalProtein').textContent = totalProtein.toFixed(1);
+            document.getElementById('totalCarbs').textContent = totalCarbs.toFixed(1);
+            document.getElementById('totalFat').textContent = totalFat.toFixed(1);
+
+            // Update current weight
+            if (weightEntries.length > 0) {
+                document.getElementById('currentWeight').textContent = weightEntries[0].weight.toFixed(1) + ' lbs';
+            }
+
+            // Update macro bars
+            const proteinPercent = Math.min((totalProtein / goals.protein) * 100, 100);
+            const carbsPercent = Math.min((totalCarbs / goals.carbs) * 100, 100);
+            const fatPercent = Math.min((totalFat / goals.fat) * 100, 100);
+
+            document.getElementById('proteinBar').style.width = proteinPercent + '%';
+            document.getElementById('carbsBar').style.width = carbsPercent + '%';
+            document.getElementById('fatBar').style.width = fatPercent + '%';
+
+            document.getElementById('proteinProgress').textContent = `${totalProtein.toFixed(1)} / ${goals.protein}g`;
+            document.getElementById('carbsProgress').textContent = `${totalCarbs.toFixed(1)} / ${goals.carbs}g`;
+            document.getElementById('fatProgress').textContent = `${totalFat.toFixed(1)} / ${goals.fat}g`;
+        }
+
+        // Display weight history
+        function displayWeightHistory() {
+            const container = document.getElementById('weightHistory');
+
+            if (weightEntries.length === 0) {
+                container.innerHTML = '<div class="no-entries"><h3>No Weight Entries</h3><p>Start tracking your weight on the "Food & Weight Entry" tab!</p></div>';
+                return;
+            }
+
+            container.innerHTML = weightEntries.map(entry => `
+                <div class="weight-entry">
+                    <div class="weight-info">
+                        <div class="weight-date">${new Date(entry.date).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</div>
+                        <div class="weight-value">${entry.weight} lbs</div>
+                        ${entry.notes ? `<div class="weight-notes-text">${entry.notes}</div>` : ''}
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-small btn-edit" onclick="editWeightEntry(${entry.id})">Edit</button>
+                        <button class="btn btn-small btn-delete" onclick="deleteWeightEntry(${entry.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Display food entries
+        function displayFoodEntries() {
+            const container = document.getElementById('foodEntries');
+            const filterDate = document.getElementById('filterDate').value;
+            const filterMeal = document.getElementById('filterMeal').value;
+
+            let filtered = foodEntries;
+
+            if (filterDate) {
+                filtered = filtered.filter(e => e.date === filterDate);
+            }
+
+            if (filterMeal) {
+                filtered = filtered.filter(e => e.mealType === filterMeal);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="no-entries"><h3>No Food Entries</h3><p>Start tracking your meals on the "Food & Weight Entry" tab!</p></div>';
+                return;
+            }
+
+            container.innerHTML = filtered.map(entry => `
+                <div class="entry-card">
+                    <div class="entry-header">
+                        <span class="entry-date">${new Date(entry.date).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                        <span class="entry-meal">${entry.mealType}</span>
+                    </div>
+                    <div class="entry-food">${entry.foodName}</div>
+                    <div class="entry-details">
+                        <div class="entry-detail">
+                            <span class="entry-detail-label">Serving Size</span>
+                            <span class="entry-detail-value">${entry.servingSize || '--'} oz</span>
+                        </div>
+                        <div class="entry-detail">
+                            <span class="entry-detail-label">Calories</span>
+                            <span class="entry-detail-value">${entry.calories}</span>
+                        </div>
+                        <div class="entry-detail">
+                            <span class="entry-detail-label">Protein</span>
+                            <span class="entry-detail-value">${entry.protein}g</span>
+                        </div>
+                        <div class="entry-detail">
+                            <span class="entry-detail-label">Carbs</span>
+                            <span class="entry-detail-value">${entry.carbs}g</span>
+                        </div>
+                        <div class="entry-detail">
+                            <span class="entry-detail-label">Fat</span>
+                            <span class="entry-detail-value">${entry.fat}g</span>
+                        </div>
+                    </div>
+                    ${entry.notes ? `<div class="entry-notes">${entry.notes}</div>` : ''}
+                    <div class="btn-group">
+                        <button class="btn btn-small btn-edit" onclick="editFoodEntry(${entry.id})">Edit</button>
+                        <button class="btn btn-small btn-delete" onclick="deleteFoodEntry(${entry.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter entries
+        function filterEntries() {
+            displayFoodEntries();
+            updateStats();
+        }
+
+        // Clear filters
+        function clearFilters() {
+            document.getElementById('filterDate').value = '';
+            document.getElementById('filterMeal').value = '';
+            filterEntries();
+        }
+
+        // Initialize
+        displayWeightHistory();
+        displayFoodEntries();
+        updateStats();
+    </script>
+</body>
+</html>
