@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Big Box Shopping Tracker</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #047857;
+            --primary-light: #10b981;
+            --primary-dark: #065f46;
+            --accent: #f59e0b;
+            --accent-light: #fbbf24;
+            --background: #f0fdf4;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --border: #d1fae5;
+            --success: #10b981;
+            --warning: #ef4444;
+            --shadow: rgba(5, 150, 105, 0.1);
+            --best-deal: #fef3c7;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 50%, #6ee7b7 100%);
+            min-height: 100vh;
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px var(--shadow);
+            margin-bottom: 2rem;
+            border-left: 8px solid var(--accent);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 40%;
+            height: 200%;
+            background: radial-gradient(circle, var(--primary-light) 0%, transparent 70%);
+            opacity: 0.05;
+        }
+        
+        .header h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.8rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+            position: relative;
+        }
+        
+        .header p {
+            color: var(--text-light);
+            font-size: 1.15rem;
+            position: relative;
+        }
+        
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px var(--shadow);
+            text-align: center;
+            border-top: 5px solid var(--primary);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px var(--shadow);
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--primary);
+            font-family: 'Outfit', sans-serif;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        
+        .controls {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px var(--shadow);
+            margin-bottom: 2rem;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+        
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.9rem 1.8rem;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+        
+        button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--shadow);
+        }
+        
+        .btn-accent {
+            background: var(--accent);
+            color: var(--primary);
+        }
+        
+        .btn-accent:hover {
+            background: var(--accent-light);
+        }
+        
+        .btn-secondary {
+            background: var(--text-light);
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .search-filter {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 0.9rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 2rem;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background: var(--card-bg);
+            max-width: 900px;
+            margin: 0 auto;
+            border-radius: 20px;
+            padding: 2.5rem;
+            position: relative;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+            animation: slideUp 0.4s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: var(--text-light);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .close-btn:hover {
+            background: var(--warning);
+            transform: rotate(90deg);
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.6rem;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .unit-price-display {
+            background: var(--best-deal);
+            border: 2px solid var(--accent);
+            border-radius: 10px;
+            padding: 1.2rem;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        .unit-price-display strong {
+            font-size: 1.8rem;
+            color: var(--accent);
+            font-family: 'Outfit', sans-serif;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+        
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .item-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px var(--shadow);
+            transition: all 0.3s ease;
+            border-top: 5px solid var(--primary);
+        }
+        
+        .item-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 35px var(--shadow);
+        }
+        
+        .item-card.best-deal {
+            border-top: 5px solid var(--accent);
+            background: linear-gradient(to bottom, var(--best-deal) 0%, var(--card-bg) 100px);
+        }
+        
+        .best-deal-badge {
+            background: var(--accent);
+            color: var(--primary-dark);
+            padding: 0.5rem 1rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+        }
+        
+        .item-content {
+            padding: 1.8rem;
+        }
+        
+        .item-name {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.8rem;
+        }
+        
+        .item-price {
+            font-size: 2rem;
+            color: var(--primary);
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            margin-bottom: 0.5rem;
+        }
+        
+        .item-unit-price {
+            font-size: 1.1rem;
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .item-details {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+        
+        .item-details strong {
+            color: var(--text);
+        }
+        
+        .item-badges {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        
+        .item-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.4rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .item-actions {
+            display: flex;
+            gap: 0.7rem;
+            margin-top: 1.2rem;
+        }
+        
+        .item-actions button {
+            flex: 1;
+            padding: 0.7rem;
+            font-size: 0.9rem;
+        }
+        
+        .shopping-list {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px var(--shadow);
+            margin-top: 2rem;
+        }
+        
+        .shopping-list h2 {
+            font-family: 'Outfit', sans-serif;
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .shopping-list-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 2px solid var(--border);
+            transition: background 0.3s ease;
+        }
+        
+        .shopping-list-item:hover {
+            background: var(--background);
+        }
+        
+        .shopping-list-item input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
+        
+        .shopping-list-item.checked {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 5rem 2rem;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+        
+        .empty-state h2 {
+            font-family: 'Outfit', sans-serif;
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .empty-state p {
+            color: var(--text-light);
+            font-size: 1.2rem;
+        }
+        
+        .welcome-modal {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+        
+        .welcome-modal h2 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .welcome-content {
+            text-align: left;
+        }
+        
+        .welcome-content ul {
+            list-style: none;
+            margin: 2rem 0;
+        }
+        
+        .welcome-content li {
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .welcome-content li::before {
+            content: '✓';
+            margin-right: 1rem;
+            color: var(--accent);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+        
+        @media (max-width: 768px) {
+            .search-filter {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .items-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 Smart Big Box Shopping Tracker</h1>
+            <p>Compare prices, track deals, and save money across all your favorite stores</p>
+        </div>
+        
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-value" id="totalItems">0</div>
+                <div class="stat-label">Total Items</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalSpent">$0.00</div>
+                <div class="stat-label">Total Spent</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalSavings">$0.00</div>
+                <div class="stat-label">Est. Savings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="bestStore">—</div>
+                <div class="stat-label">Best Store</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="button-group">
+                <button onclick="openAddModal()" class="btn-accent">➕ Add Purchase</button>
+                <button onclick="toggleShoppingList()">📝 Shopping List</button>
+                <button onclick="showComparison()">📊 Compare Prices</button>
+                <button onclick="exportData()">💾 Export Data</button>
+                <button onclick="importData()">📥 Import Data</button>
+                <button onclick="clearAll()" class="btn-secondary">🗑️ Clear All</button>
+            </div>
+            
+            <div class="search-filter">
+                <input type="text" id="searchInput" placeholder="🔍 Search items..." oninput="filterItems()">
+                <select id="storeFilter" onchange="filterItems()">
+                    <option value="">All Stores</option>
+                </select>
+                <select id="categoryFilter" onchange="filterItems()">
+                    <option value="">All Categories</option>
+                </select>
+                <select id="sortBy" onchange="sortItems()">
+                    <option value="date">Sort by Date</option>
+                    <option value="price">Sort by Price</option>
+                    <option value="unitprice">Sort by Unit Price</option>
+                    <option value="name">Sort by Name</option>
+                </select>
+            </div>
+        </div>
+        
+        <div id="itemsContainer" class="items-grid"></div>
+        
+        <div class="empty-state" id="emptyState">
+            <h2>Start Saving Smart! 💰</h2>
+            <p>Add your first purchase to begin tracking the best deals</p>
+        </div>
+        
+        <div class="shopping-list" id="shoppingList" style="display: none;">
+            <h2>📝 Shopping List</h2>
+            <div id="shoppingListItems"></div>
+        </div>
+    </div>
+    
+    <!-- Welcome Modal -->
+    <div id="welcomeModal" class="modal">
+        <div class="modal-content welcome-modal">
+            <button class="close-btn" onclick="closeWelcome()">×</button>
+            <div class="welcome-content">
+                <h2>Welcome to Smart Shopping! 🛒</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 1.5rem;">Your ultimate tool for comparing prices and maximizing savings across all your favorite stores.</p>
+                
+                <ul>
+                    <li>Track purchases from Walmart, Target, Costco, Sam's Club, BJ's, and more</li>
+                    <li>Automatically calculate unit prices for smart bulk buying decisions</li>
+                    <li>Compare prices across stores to find the best deals</li>
+                    <li>Generate shopping lists with recommended stores for each item</li>
+                    <li>Track your savings over time and see your best-performing stores</li>
+                    <li>All data saved locally on your device - completely private!</li>
+                </ul>
+                
+                <button onclick="closeWelcome()" class="btn-accent" style="margin-top: 2rem; width: 100%; padding: 1.2rem;">Let's Start Saving!</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add/Edit Modal -->
+    <div id="itemModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">×</button>
+            <h2 style="font-family: 'Outfit', sans-serif; color: var(--primary); margin-bottom: 2rem; font-weight: 700;" id="modalTitle">Add Purchase</h2>
+            
+            <form id="itemForm" onsubmit="saveItem(event)">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label>Item Name *</label>
+                        <input type="text" id="itemName" required placeholder="e.g., Organic Milk">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Store *</label>
+                        <select id="itemStore" required>
+                            <option value="">Select Store</option>
+                            <option value="Walmart">Walmart</option>
+                            <option value="Target">Target</option>
+                            <option value="Costco">Costco</option>
+                            <option value="Sam's Club">Sam's Club</option>
+                            <option value="BJ's Wholesale">BJ's Wholesale</option>
+                            <option value="Aldi">Aldi</option>
+                            <option value="Kroger">Kroger</option>
+                            <option value="Whole Foods">Whole Foods</option>
+                            <option value="Trader Joe's">Trader Joe's</option>
+                            <option value="Amazon">Amazon</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="itemCategory">
+                            <option value="Groceries">Groceries</option>
+                            <option value="Household">Household</option>
+                            <option value="Personal Care">Personal Care</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Clothing">Clothing</option>
+                            <option value="Pet Supplies">Pet Supplies</option>
+                            <option value="Baby Products">Baby Products</option>
+                            <option value="Health & Wellness">Health & Wellness</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Total Price *</label>
+                        <input type="number" id="itemPrice" step="0.01" required placeholder="0.00" oninput="calculateUnitPrice()">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Quantity/Size *</label>
+                        <input type="number" id="itemQuantity" step="0.01" required placeholder="e.g., 128" oninput="calculateUnitPrice()">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Unit Type *</label>
+                        <select id="unitType" required onchange="calculateUnitPrice()">
+                            <option value="">Select Unit</option>
+                            <option value="oz">Ounces (oz)</option>
+                            <option value="lb">Pounds (lb)</option>
+                            <option value="g">Grams (g)</option>
+                            <option value="kg">Kilograms (kg)</option>
+                            <option value="ml">Milliliters (ml)</option>
+                            <option value="L">Liters (L)</option>
+                            <option value="count">Count/Items</option>
+                            <option value="each">Each</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Purchase Date</label>
+                        <input type="date" id="itemDate">
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label>Notes</label>
+                        <textarea id="itemNotes" rows="2" placeholder="Special deals, quality notes, etc."></textarea>
+                    </div>
+                    
+                    <div class="form-group full-width" id="unitPriceDisplay" style="display: none;">
+                        <div class="unit-price-display">
+                            <strong id="calculatedUnitPrice">$0.00</strong>
+                            <span>per <span id="displayUnit">unit</span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button type="submit" class="btn-accent">💾 Save Purchase</button>
+                    <button type="button" onclick="closeModal()" class="btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <input type="file" id="importInput" accept=".json" style="display: none;" onchange="handleImport(event)">
+    
+    <script>
+        let purchases = JSON.parse(localStorage.getItem('smartShopping')) || [];
+        let currentEditIndex = null;
+        let shoppingListVisible = false;
+        
+        function init() {
+            // Show welcome modal on first visit
+            if (!localStorage.getItem('smartShoppingWelcomed')) {
+                document.getElementById('welcomeModal').style.display = 'block';
+                localStorage.setItem('smartShoppingWelcomed', 'true');
+            }
+            
+            // Set today's date as default
+            document.getElementById('itemDate').valueAsDate = new Date();
+            
+            renderItems();
+            updateStats();
+            updateFilters();
+        }
+        
+        function closeWelcome() {
+            document.getElementById('welcomeModal').style.display = 'none';
+        }
+        
+        function openAddModal() {
+            currentEditIndex = null;
+            document.getElementById('modalTitle').textContent = 'Add Purchase';
+            document.getElementById('itemForm').reset();
+            document.getElementById('itemDate').valueAsDate = new Date();
+            document.getElementById('unitPriceDisplay').style.display = 'none';
+            document.getElementById('itemModal').style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('itemModal').style.display = 'none';
+        }
+        
+        function calculateUnitPrice() {
+            const price = parseFloat(document.getElementById('itemPrice').value) || 0;
+            const quantity = parseFloat(document.getElementById('itemQuantity').value) || 0;
+            const unit = document.getElementById('unitType').value;
+            
+            if (price > 0 && quantity > 0 && unit) {
+                const unitPrice = price / quantity;
+                const decimals = (unit === 'each' || unit === 'count') ? 2 : 4;
+                document.getElementById('calculatedUnitPrice').textContent = `$${unitPrice.toFixed(decimals)}`;
+                document.getElementById('displayUnit').textContent = unit;
+                document.getElementById('unitPriceDisplay').style.display = 'block';
+            } else {
+                document.getElementById('unitPriceDisplay').style.display = 'none';
+            }
+        }
+        
+        function saveItem(event) {
+            event.preventDefault();
+            
+            const price = parseFloat(document.getElementById('itemPrice').value);
+            const quantity = parseFloat(document.getElementById('itemQuantity').value);
+            const unitType = document.getElementById('unitType').value;
+            const unitPrice = price / quantity;
+            
+            const item = {
+                id: currentEditIndex !== null ? purchases[currentEditIndex].id : Date.now(),
+                name: document.getElementById('itemName').value,
+                store: document.getElementById('itemStore').value,
+                category: document.getElementById('itemCategory').value,
+                price: price,
+                quantity: quantity,
+                unitType: unitType,
+                unitPrice: unitPrice,
+                date: document.getElementById('itemDate').value,
+                notes: document.getElementById('itemNotes').value,
+                timestamp: currentEditIndex !== null ? purchases[currentEditIndex].timestamp : Date.now()
+            };
+            
+            if (currentEditIndex !== null) {
+                purchases[currentEditIndex] = item;
+            } else {
+                purchases.push(item);
+            }
+            
+            localStorage.setItem('smartShopping', JSON.stringify(purchases));
+            closeModal();
+            renderItems();
+            updateStats();
+            updateFilters();
+        }
+        
+        function editItem(index) {
+            currentEditIndex = index;
+            const item = purchases[index];
+            
+            document.getElementById('modalTitle').textContent = 'Edit Purchase';
+            document.getElementById('itemName').value = item.name;
+            document.getElementById('itemStore').value = item.store;
+            document.getElementById('itemCategory').value = item.category;
+            document.getElementById('itemPrice').value = item.price;
+            document.getElementById('itemQuantity').value = item.quantity;
+            document.getElementById('unitType').value = item.unitType;
+            document.getElementById('itemDate').value = item.date || '';
+            document.getElementById('itemNotes').value = item.notes || '';
+            
+            calculateUnitPrice();
+            document.getElementById('itemModal').style.display = 'block';
+        }
+        
+        function deleteItem(index) {
+            if (confirm('Delete this purchase?')) {
+                purchases.splice(index, 1);
+                localStorage.setItem('smartShopping', JSON.stringify(purchases));
+                renderItems();
+                updateStats();
+                updateFilters();
+            }
+        }
+        
+        function renderItems() {
+            const container = document.getElementById('itemsContainer');
+            const emptyState = document.getElementById('emptyState');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const storeFilter = document.getElementById('storeFilter').value;
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            
+            let filteredItems = purchases.filter(item => {
+                const matchesSearch = item.name.toLowerCase().includes(searchTerm) ||
+                                    (item.notes && item.notes.toLowerCase().includes(searchTerm));
+                const matchesStore = !storeFilter || item.store === storeFilter;
+                const matchesCategory = !categoryFilter || item.category === categoryFilter;
+                
+                return matchesSearch && matchesStore && matchesCategory;
+            });
+            
+            // Find best deals (lowest unit price per item name)
+            const bestDeals = {};
+            purchases.forEach(item => {
+                if (!bestDeals[item.name] || item.unitPrice < bestDeals[item.name].unitPrice) {
+                    bestDeals[item.name] = item;
+                }
+            });
+            
+            if (filteredItems.length === 0) {
+                container.style.display = 'none';
+                emptyState.style.display = 'block';
+            } else {
+                container.style.display = 'grid';
+                emptyState.style.display = 'none';
+            }
+            
+            container.innerHTML = filteredItems.map((item, index) => {
+                const actualIndex = purchases.indexOf(item);
+                const isBestDeal = bestDeals[item.name] && bestDeals[item.name].id === item.id;
+                
+                return `
+                    <div class="item-card ${isBestDeal ? 'best-deal' : ''}">
+                        <div class="item-content">
+                            ${isBestDeal ? '<div class="best-deal-badge">🏆 BEST DEAL</div>' : ''}
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-price">$${item.price.toFixed(2)}</div>
+                            <div class="item-unit-price">$${(item.unitType === 'each' || item.unitType === 'count') ? item.unitPrice.toFixed(2) : item.unitPrice.toFixed(4)} per ${item.unitType}</div>
+                            
+                            <div class="item-details"><strong>Store:</strong> ${item.store}</div>
+                            <div class="item-details"><strong>Size:</strong> ${item.quantity} ${item.unitType}</div>
+                            ${item.date ? `<div class="item-details"><strong>Purchased:</strong> ${new Date(item.date).toLocaleDateString()}</div>` : ''}
+                            ${item.notes ? `<div class="item-details"><strong>Notes:</strong> ${item.notes}</div>` : ''}
+                            
+                            <div class="item-badges">
+                                <span class="item-badge">${item.category}</span>
+                                <span class="item-badge">${item.store}</span>
+                            </div>
+                            
+                            <div class="item-actions">
+                                <button onclick="editItem(${actualIndex})">✏️ Edit</button>
+                                <button onclick="deleteItem(${actualIndex})" class="btn-secondary">🗑️ Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function updateStats() {
+            const totalItems = purchases.length;
+            const totalSpent = purchases.reduce((sum, item) => sum + item.price, 0);
+            
+            // Calculate savings (difference between worst and best deals)
+            const itemGroups = {};
+            purchases.forEach(item => {
+                if (!itemGroups[item.name]) itemGroups[item.name] = [];
+                itemGroups[item.name].push(item);
+            });
+            
+            let totalSavings = 0;
+            Object.values(itemGroups).forEach(group => {
+                if (group.length > 1) {
+                    const prices = group.map(i => i.unitPrice * i.quantity);
+                    const maxPrice = Math.max(...prices);
+                    const minPrice = Math.min(...prices);
+                    totalSavings += (maxPrice - minPrice);
+                }
+            });
+            
+            // Find best store (lowest average unit price)
+            const storeStats = {};
+            purchases.forEach(item => {
+                if (!storeStats[item.store]) {
+                    storeStats[item.store] = { total: 0, count: 0 };
+                }
+                storeStats[item.store].total += item.unitPrice;
+                storeStats[item.store].count++;
+            });
+            
+            let bestStore = '—';
+            let bestAvg = Infinity;
+            Object.keys(storeStats).forEach(store => {
+                const avg = storeStats[store].total / storeStats[store].count;
+                if (avg < bestAvg) {
+                    bestAvg = avg;
+                    bestStore = store;
+                }
+            });
+            
+            document.getElementById('totalItems').textContent = totalItems;
+            document.getElementById('totalSpent').textContent = `$${totalSpent.toFixed(2)}`;
+            document.getElementById('totalSavings').textContent = `$${totalSavings.toFixed(2)}`;
+            document.getElementById('bestStore').textContent = bestStore;
+        }
+        
+        function updateFilters() {
+            const storeFilter = document.getElementById('storeFilter');
+            const categoryFilter = document.getElementById('categoryFilter');
+            
+            const stores = [...new Set(purchases.map(item => item.store))].sort();
+            const categories = [...new Set(purchases.map(item => item.category))].sort();
+            
+            const currentStore = storeFilter.value;
+            const currentCategory = categoryFilter.value;
+            
+            storeFilter.innerHTML = '<option value="">All Stores</option>' +
+                stores.map(store => `<option value="${store}">${store}</option>`).join('');
+            
+            categoryFilter.innerHTML = '<option value="">All Categories</option>' +
+                categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+            
+            storeFilter.value = currentStore;
+            categoryFilter.value = currentCategory;
+        }
+        
+        function filterItems() {
+            renderItems();
+        }
+        
+        function sortItems() {
+            const sortBy = document.getElementById('sortBy').value;
+            
+            purchases.sort((a, b) => {
+                switch(sortBy) {
+                    case 'price':
+                        return b.price - a.price;
+                    case 'unitprice':
+                        return a.unitPrice - b.unitPrice;
+                    case 'name':
+                        return a.name.localeCompare(b.name);
+                    case 'date':
+                    default:
+                        return new Date(b.date) - new Date(a.date);
+                }
+            });
+            
+            renderItems();
+        }
+        
+        function toggleShoppingList() {
+            shoppingListVisible = !shoppingListVisible;
+            const listDiv = document.getElementById('shoppingList');
+            
+            if (shoppingListVisible) {
+                generateShoppingList();
+                listDiv.style.display = 'block';
+                listDiv.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                listDiv.style.display = 'none';
+            }
+        }
+        
+        function generateShoppingList() {
+            const container = document.getElementById('shoppingListItems');
+            
+            // Group by item and find best deal
+            const itemGroups = {};
+            purchases.forEach(item => {
+                if (!itemGroups[item.name]) {
+                    itemGroups[item.name] = [];
+                }
+                itemGroups[item.name].push(item);
+            });
+            
+            const recommendations = Object.keys(itemGroups).map(itemName => {
+                const items = itemGroups[itemName];
+                const bestDeal = items.reduce((best, current) => 
+                    current.unitPrice < best.unitPrice ? current : best
+                );
+                return {
+                    name: itemName,
+                    store: bestDeal.store,
+                    unitPrice: bestDeal.unitPrice,
+                    unitType: bestDeal.unitType
+                };
+            }).sort((a, b) => a.name.localeCompare(b.name));
+            
+            if (recommendations.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-light);">No items yet. Add purchases to generate recommendations!</p>';
+                return;
+            }
+            
+            container.innerHTML = recommendations.map(item => `
+                <div class="shopping-list-item">
+                    <input type="checkbox" onchange="this.parentElement.classList.toggle('checked')">
+                    <div style="flex: 1;">
+                        <strong>${item.name}</strong><br>
+                        <span style="color: var(--text-light);">Best at ${item.store} - $${(item.unitType === 'each' || item.unitType === 'count') ? item.unitPrice.toFixed(2) : item.unitPrice.toFixed(4)}/${item.unitType}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function showComparison() {
+            alert('Price comparison view coming soon! For now, look for the 🏆 BEST DEAL badges on your lowest-priced items.');
+        }
+        
+        function exportData() {
+            const dataStr = JSON.stringify(purchases, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `smart-shopping-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function importData() {
+            document.getElementById('importInput').click();
+        }
+        
+        function handleImport(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        if (confirm(`Import ${importedData.length} items? This will replace your current data.`)) {
+                            purchases = importedData;
+                            localStorage.setItem('smartShopping', JSON.stringify(purchases));
+                            renderItems();
+                            updateStats();
+                            updateFilters();
+                            alert('Import successful!');
+                        }
+                    } catch (error) {
+                        alert('Error importing file. Please check the file format.');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+        
+        function clearAll() {
+            if (confirm('Delete ALL purchases? This cannot be undone!')) {
+                if (confirm('Really? This will permanently delete everything!')) {
+                    purchases = [];
+                    localStorage.setItem('smartShopping', JSON.stringify(purchases));
+                    renderItems();
+                    updateStats();
+                    updateFilters();
+                }
+            }
+        }
+        
+        init();
+    </script>
+</body>
+</html>
