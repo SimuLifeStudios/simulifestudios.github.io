@@ -1,0 +1,3052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>S.H.I.P. Captain's Complete Digital Log</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: 
+                radial-gradient(ellipse at center bottom, rgba(0,20,40,0.8) 0%, transparent 70%),
+                radial-gradient(circle at 20% 20%, rgba(255,255,255,0.03) 1px, transparent 1px),
+                radial-gradient(circle at 60% 15%, rgba(255,255,255,0.02) 1px, transparent 1px),
+                radial-gradient(circle at 80% 40%, rgba(255,255,255,0.04) 1px, transparent 1px),
+                radial-gradient(circle at 30% 60%, rgba(255,255,255,0.02) 1px, transparent 1px),
+                radial-gradient(circle at 70% 80%, rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, #0a1829 0%, #1e3c72 40%, #2a5298 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: #333;
+            position: relative;
+        }
+
+        /* Ocean waves at bottom */
+        body::before {
+            content: '';
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 120px;
+            background: 
+                linear-gradient(90deg, transparent 0%, rgba(52, 152, 219, 0.3) 25%, transparent 50%, rgba(52, 152, 219, 0.2) 75%, transparent 100%),
+                linear-gradient(to top, rgba(0,30,60,0.6) 0%, transparent 100%);
+            clip-path: polygon(
+                0 60%, 
+                10% 55%, 
+                20% 60%, 
+                30% 50%, 
+                40% 55%, 
+                50% 45%, 
+                60% 50%, 
+                70% 40%, 
+                80% 45%, 
+                90% 35%, 
+                100% 40%, 
+                100% 100%, 
+                0% 100%
+            );
+            z-index: 1;
+            pointer-events: none;
+            animation: waves 8s ease-in-out infinite;
+        }
+
+        /* Animated waves */
+        @keyframes waves {
+            0%, 100% {
+                clip-path: polygon(
+                    0 60%, 
+                    10% 55%, 
+                    20% 60%, 
+                    30% 50%, 
+                    40% 55%, 
+                    50% 45%, 
+                    60% 50%, 
+                    70% 40%, 
+                    80% 45%, 
+                    90% 35%, 
+                    100% 40%, 
+                    100% 100%, 
+                    0% 100%
+                );
+            }
+            50% {
+                clip-path: polygon(
+                    0 55%, 
+                    10% 60%, 
+                    20% 55%, 
+                    30% 65%, 
+                    40% 50%, 
+                    50% 60%, 
+                    60% 45%, 
+                    70% 55%, 
+                    80% 40%, 
+                    90% 50%, 
+                    100% 35%, 
+                    100% 100%, 
+                    0% 100%
+                );
+            }
+        }
+
+        /* Moon */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 8%;
+            right: 15%;
+            width: 80px;
+            height: 80px;
+            background: 
+                radial-gradient(circle at 30% 30%, #ffffff 0%, #f8f8ff 50%, #e6e6fa 100%);
+            border-radius: 50%;
+            box-shadow: 
+                0 0 20px rgba(255,255,255,0.3),
+                0 0 40px rgba(255,255,255,0.2),
+                inset -10px -10px 0 rgba(200,200,200,0.1);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            background: rgba(15, 30, 50, 0.95);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 
+                0 10px 30px rgba(0,0,0,0.4),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            color: #ffffff;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            color: #e8f4f8;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .nav-tab {
+            background: rgba(30, 60, 100, 0.9);
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            outline: none;
+            touch-action: manipulation;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        .nav-tab:hover {
+            background: rgba(52, 152, 219, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .nav-tab.active {
+            background: rgba(231, 76, 60, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        .tab-content {
+            display: none;
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 
+                0 15px 35px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .page-title {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .page-title h2 {
+            font-size: 2rem;
+            color: #1a365d;
+            margin-bottom: 5px;
+        }
+
+        .page-subtitle {
+            font-size: 1rem;
+            color: #4a5568;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .page-explanation {
+            font-size: 0.9rem;
+            color: #718096;
+            max-width: 600px;
+            line-height: 1.5;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: rgba(255,255,255,0.95);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            border-left: 4px solid #3498db;
+            border: 1px solid rgba(52, 152, 219, 0.2);
+        }
+
+        .chart-container h3 {
+            color: #1a365d;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .chart-container h3::before {
+            content: "⚓";
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #1a365d;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.9);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            background: rgba(255,255,255,1);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin: 5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            outline: none;
+            touch-action: manipulation;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stat-card p {
+            opacity: 0.95;
+            font-size: 0.9rem;
+        }
+
+        .treasure-goal {
+            background: linear-gradient(135deg, rgba(240, 147, 251, 0.9) 0%, rgba(245, 87, 108, 0.9) 100%);
+        }
+
+        .current-treasure {
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.9) 0%, rgba(0, 242, 254, 0.9) 100%);
+        }
+
+        .monthly-growth {
+            background: linear-gradient(135deg, rgba(67, 233, 123, 0.9) 0%, rgba(56, 249, 215, 0.9) 100%);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, #34495e, #2c3e50);
+            color: white;
+            font-weight: bold;
+        }
+
+        .data-table tr:hover {
+            background: rgba(52, 152, 219, 0.05);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(236, 240, 241, 0.8);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .alert {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: rgba(212, 237, 218, 0.9);
+            border-color: #27ae60;
+            color: #155724;
+        }
+
+        .alert-warning {
+            background: rgba(255, 243, 205, 0.9);
+            border-color: #f39c12;
+            color: #856404;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 18px;
+            border-radius: 12px;
+            margin: 20px 0 15px 0;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+
+        .daily-log {
+            background: rgba(248, 249, 250, 0.95);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .compass {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: rgba(30, 60, 100, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            z-index: 1000;
+            animation: rotate 20s linear infinite;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .ship-wheel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(15, 30, 50, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            z-index: 1000;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .ship-wheel:hover {
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .dashboard-grid,
+            .form-grid,
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            body::after {
+                width: 60px;
+                height: 60px;
+                top: 5%;
+                right: 10%;
+            }
+        }
+
+        .service-card {
+            background: rgba(255,255,255,0.95);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid #2ecc71;
+            margin-bottom: 15px;
+        }
+
+        .mission-card {
+            background: rgba(255,255,255,0.95);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid #3498db;
+            margin-bottom: 15px;
+        }
+
+        .priority-high {
+            border-left-color: #e74c3c;
+        }
+
+        .priority-medium {
+            border-left-color: #f39c12;
+        }
+
+        .priority-low {
+            border-left-color: #27ae60;
+        }
+
+        .registry-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: rgba(236, 240, 241, 0.8);
+            border-radius: 12px;
+            padding: 5px;
+        }
+
+        .registry-tab {
+            flex: 1;
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .registry-tab.active {
+            background: #3498db;
+            color: white;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+        }
+
+        .registry-content {
+            display: none;
+        }
+
+        .registry-content.active {
+            display: block;
+        }
+
+        .explanation-box {
+            background: rgba(232, 246, 243, 0.9);
+            border: 1px solid rgba(22, 160, 133, 0.3);
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 20px;
+        }
+
+        .explanation-box h4 {
+            color: #16a085;
+            margin-bottom: 8px;
+        }
+
+        .explanation-box p {
+            color: #2c3e50;
+            margin: 0;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* Download instructions box */
+        .download-instructions {
+            background: rgba(52, 152, 219, 0.1);
+            border: 2px solid rgba(52, 152, 219, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .download-instructions h3 {
+            color: #2980b9;
+            margin-bottom: 15px;
+        }
+
+        .download-instructions ol {
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        .download-instructions li {
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        /* Welcome Modal */
+        .welcome-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 20px;
+        }
+
+        .welcome-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            animation: slideIn 0.4s;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .welcome-content h2 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .welcome-content ul {
+            text-align: left;
+            margin: 20px 0;
+            list-style: none;
+        }
+
+        .welcome-content li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .welcome-content li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="welcomeModal" class="welcome-modal">
+        <div class="welcome-content">
+            <h2>⚓ Welcome Aboard S.H.I.P.!</h2>
+            <ul>
+                <li><strong>Navigate your side hustle</strong> - Track Sales, Hours, Inventory & Planning all in one place</li>
+                <li><strong>Your data stays private</strong> - Everything saves locally on your device, no accounts needed</li>
+                <li><strong>Works everywhere</strong> - Use on phone, tablet, or computer with beautiful ocean night sky theme</li>
+            </ul>
+            <button class="btn btn-primary" onclick="closeWelcome()" style="width: 100%; margin-top: 20px; padding: 15px; font-size: 1.1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 10px; color: white; cursor: pointer;">⚓ Set Sail - Start Tracking!</button>
+        </div>
+    </div>
+
+    <!-- Nautical Background Elements -->
+    <div class="compass">🧭</div>
+    <div class="ship-wheel" onclick="scrollToTop()">⚓</div>
+
+    <div class="container">
+        <div class="header">
+            <h1>⚓ S.H.I.P. Captain's Complete Digital Log ⚓</h1>
+            <p>"The Ship That Never Sinks" - Your Complete Business Navigation System</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('dashboard', this)" ontouchstart="">🏴‍☠️ Command Bridge</button>
+            <button class="nav-tab" onclick="showTab('business-plan', this)" ontouchstart="">📋 Ship's Blueprint</button>
+            <button class="nav-tab" onclick="showTab('services', this)" ontouchstart="">🎁 Cargo Manifest</button>
+            <button class="nav-tab" onclick="showTab('daily', this)" ontouchstart="">📅 Captain's Logs</button>
+            <button class="nav-tab" onclick="showTab('treasure', this)" ontouchstart="">💰 Treasure Chest</button>
+            <button class="nav-tab" onclick="showTab('voyage', this)" ontouchstart="">🗺️ Voyage Planning</button>
+            <button class="nav-tab" onclick="showTab('crew', this)" ontouchstart="">⚓ Ship's Crew</button>
+            <button class="nav-tab" onclick="showTab('customers', this)" ontouchstart="">👥 Customer Registry</button>
+            <button class="nav-tab" onclick="showTab('marketing', this)" ontouchstart="">📢 Signal Operations</button>
+            <button class="nav-tab" onclick="showTab('reports', this)" ontouchstart="">📈 Ship Reports</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="page-title">
+                <h2>🏴‍☠️ Command Bridge (Business Dashboard)</h2>
+                <div class="page-subtitle">Your main business control center</div>
+                <div class="page-explanation">Monitor key performance metrics, track progress, and get an overview of your entire side hustle operation from one central location.</div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card treasure-goal">
+                    <h3 id="monthlyGoal">$0</h3>
+                    <p>Monthly Revenue Goal</p>
+                </div>
+                <div class="stat-card current-treasure">
+                    <h3 id="currentTreasure">$0</h3>
+                    <p>Current Month's Revenue</p>
+                </div>
+                <div class="stat-card monthly-growth">
+                    <h3 id="growthRate">0%</h3>
+                    <p>Monthly Growth Rate</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalCustomers">0</h3>
+                    <p>Total Customers</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalCrew">0</h3>
+                    <p>Team Members</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalMissions">0</h3>
+                    <p>Active Projects</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalServices">0</h3>
+                    <p>Services/Products</p>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="chart-container">
+                    <h3>Revenue Collection Progress</h3>
+                    <canvas id="treasureChart" width="400" height="200"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Monthly Profit & Loss</h3>
+                    <canvas id="profitLossChart" width="400" height="200"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Customer Growth Timeline</h3>
+                    <canvas id="customerGrowthChart" width="400" height="200"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Revenue Sources Distribution</h3>
+                    <canvas id="revenueSourcesChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-success" onclick="exportData()">🏴‍☠️ Export All Data</button>
+                <button class="btn btn-warning" onclick="printReport()">🖨️ Print Business Report</button>
+                <button class="btn" onclick="backupData()">💾 Backup Data</button>
+            </div>
+        </div>
+
+        <!-- Business Plan Tab -->
+        <div id="business-plan" class="tab-content">
+            <div class="page-title">
+                <h2>📋 Ship's Blueprint (Business Plan)</h2>
+                <div class="page-subtitle">Your strategic business foundation</div>
+                <div class="page-explanation">Define your mission, goals, and strategic direction. This is your roadmap for building a successful side hustle.</div>
+            </div>
+
+            <div class="explanation-box">
+                <h4>🧭 What is a Ship's Blueprint?</h4>
+                <p>In business terms, this is your business plan - the foundation that guides all your decisions and helps you stay focused on your goals.</p>
+            </div>
+
+            <div class="section-header">⚓ Captain's Vessel Overview (Business Foundation)</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="businessMission">Mission of This Ship (What Your Business Does)</label>
+                    <textarea id="businessMission" rows="3" placeholder="What products/services do you offer? What problem do you solve?"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="targetCustomers">Who We Serve (Target Market)</label>
+                    <textarea id="targetCustomers" rows="3" placeholder="Who are your ideal customers? Demographics, needs, etc."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="uniqueValue">Our Unique Flag (Competitive Advantage)</label>
+                    <textarea id="uniqueValue" rows="3" placeholder="What makes you different from competitors?"></textarea>
+                </div>
+            </div>
+
+            <div class="section-header">🧭 Navigation Objectives (Business Goals)</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="sixMonthGoal">6-Month Heading (Short-term Goals)</label>
+                    <textarea id="sixMonthGoal" rows="2" placeholder="Where do you want your business to be in 6 months?"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="oneYearGoal">1-Year Destination (Medium-term Vision)</label>
+                    <textarea id="oneYearGoal" rows="2" placeholder="Your 1-year business vision and milestones"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="fiveYearGoal">5-Year Port of Call (Long-term Dream)</label>
+                    <textarea id="fiveYearGoal" rows="2" placeholder="Your ultimate business vision and aspirations"></textarea>
+                </div>
+            </div>
+
+            <button class="btn btn-success" onclick="saveBusinessPlan()">⚓ Save Business Plan</button>
+        </div>
+
+        <!-- Services Tab -->
+        <div id="services" class="tab-content">
+            <div class="page-title">
+                <h2>🎁 Cargo Manifest (Services & Products)</h2>
+                <div class="page-subtitle">Your complete service and product catalog</div>
+                <div class="page-explanation">Manage all the services and products you offer. Set pricing, track time requirements, and organize your offerings.</div>
+            </div>
+
+            <div class="explanation-box">
+                <h4>🎁 What is Cargo?</h4>
+                <p>Your "cargo" represents all the services and products you sell - everything that generates revenue for your business.</p>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="serviceName">Service/Product Name</label>
+                    <input type="text" id="serviceName" placeholder="e.g., Website Design, Handmade Jewelry">
+                </div>
+                <div class="form-group">
+                    <label for="servicePrice">Price ($)</label>
+                    <input type="number" id="servicePrice" step="0.01" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="serviceTime">Time Required (hours)</label>
+                    <input type="number" id="serviceTime" step="0.5" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="serviceDescription">Description</label>
+                    <textarea id="serviceDescription" rows="3" placeholder="Detailed description of what you provide..."></textarea>
+                </div>
+            </div>
+
+            <button class="btn btn-success" onclick="addService()">⚓ Add to Service Catalog</button>
+
+            <h3 style="margin-top: 30px;">Current Service & Product Catalog</h3>
+            <div id="servicesContainer"></div>
+        </div>
+
+        <!-- Daily Logs Tab -->
+        <div id="daily" class="tab-content">
+            <div class="page-title">
+                <h2>📅 Captain's Daily Logs (Daily Planning)</h2>
+                <div class="page-subtitle">Track your daily business activities</div>
+                <div class="page-explanation">Plan your daily tasks, track accomplishments, and maintain a record of your business activities for better productivity.</div>
+            </div>
+
+            <div class="explanation-box">
+                <h4>📅 What are Captain's Logs?</h4>
+                <p>These are your daily business journals - track what you accomplished, plan tomorrow's priorities, and monitor your daily progress.</p>
+            </div>
+            
+            <div class="daily-log">
+                <div class="form-group">
+                    <label for="dailyLogDate">Select Date</label>
+                    <input type="date" id="dailyLogDate">
+                </div>
+
+                <div class="form-group">
+                    <label>Available Work Time (hours)</label>
+                    <input type="number" id="dailyAvailableTime" step="0.5" min="0" placeholder="How many hours can you work today?">
+                </div>
+                
+                <div class="form-group">
+                    <label>Energy Level</label>
+                    <select id="dailyEnergyLevel">
+                        <option value="storm-ready">⛈️ High Energy (Ready for big tasks)</option>
+                        <option value="steady">⚓ Medium Energy (Steady work)</option>
+                        <option value="calm">🌊 Low Energy (Light tasks only)</option>
+                    </select>
+                </div>
+
+                <h4>🎯 Top 3 Priority Tasks</h4>
+                <div class="form-group">
+                    <input type="text" id="dailyPriority1" placeholder="Most important task today">
+                </div>
+                <div class="form-group">
+                    <input type="text" id="dailyPriority2" placeholder="Second priority task">
+                </div>
+                <div class="form-group">
+                    <input type="text" id="dailyPriority3" placeholder="Third priority task">
+                </div>
+
+                <h4>🏆 Daily Accomplishments</h4>
+                <div class="form-group">
+                    <textarea id="dailyVictories" rows="3" placeholder="What did you accomplish today? Wins, progress, completed tasks..."></textarea>
+                </div>
+            </div>
+
+            <button class="btn btn-success" onclick="saveDailyLog()">⚓ Save Daily Log</button>
+
+            <h3 style="margin-top: 30px;">Recent Daily Business Logs</h3>
+            <div id="dailyLogsContainer"></div>
+        </div>
+
+        <!-- Treasure Tab -->
+        <div id="treasure" class="tab-content">
+            <div class="page-title">
+                <h2>💰 Treasure Chest (Financial Management)</h2>
+                <div class="page-subtitle">Track income, expenses, and financial goals</div>
+                <div class="page-explanation">Monitor all money coming in and going out of your business. Set revenue goals and track your financial progress.</div>
+            </div>
+
+            <div class="explanation-box">
+                <h4>💰 What is Treasure?</h4>
+                <p>Your "treasure" is all the money your business earns - from sales, services, subscriptions, or any other income source.</p>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="treasureDate">Date of Income</label>
+                    <input type="date" id="treasureDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="treasureAmount">Income Amount ($)</label>
+                    <input type="number" id="treasureAmount" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="treasureSource">Income Source</label>
+                    <select id="treasureSource" required>
+                        <option value="">Select Source...</option>
+                        <option value="services">Services Provided</option>
+                        <option value="products">Product Sales</option>
+                        <option value="subscriptions">Subscription Revenue</option>
+                        <option value="consulting">Consulting Fees</option>
+                        <option value="commissions">Commission Earnings</option>
+                        <option value="affiliate">Affiliate Income</option>
+                        <option value="other">Other Income</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="treasureNotes">Notes</label>
+                    <textarea id="treasureNotes" rows="3" placeholder="Details about this income..."></textarea>
+                </div>
+            </div>
+
+            <button class="btn btn-success" onclick="addTreasureEntry()">⚓ Log Income Entry</button>
+
+            <div style="margin-top: 30px;">
+                <h3>Monthly Revenue Goal</h3>
+                <div class="form-group">
+                    <label for="monthlyTreasureGoal">Set Monthly Goal ($)</label>
+                    <input type="number" id="monthlyTreasureGoal" step="0.01" min="0" placeholder="How much do you want to earn this month?">
+                    <button class="btn" onclick="setMonthlyGoal()">Set Goal</button>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="treasureProgress" style="width: 0%"></div>
+                </div>
+                <p id="treasureProgressText">Progress: $0 of $0 (0%)</p>
+            </div>
+
+            <h3 style="margin-top: 30px;">Recent Income Entries</h3>
+            <table class="data-table" id="treasureTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Source</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="treasureTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Voyage Planning Tab -->
+        <div id="voyage" class="tab-content">
+            <div class="page-title">
+                <h2>🗺️ Voyage Planning (Project Management)</h2>
+                <div class="page-subtitle">Plan and track your business projects</div>
+                <div class="page-explanation">Organize major projects, set deadlines, track progress, and manage multiple business initiatives simultaneously.</div>
+            </div>
+
+            <div class="explanation-box">
+                <h4>🗺️ What are Voyages?</h4>
+                <p>Your "voyages" are major business projects or initiatives - like launching a product, marketing campaigns, or big client projects.</p>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="missionTitle">Project Title</label>
+                    <input type="text" id="missionTitle" placeholder="e.g., Launch New Product Line, Website Redesign">
+                </div>
+                <div class="form-group">
+                    <label for="missionStartDate">Start Date</label>
+                    <input type="date" id="missionStartDate">
+                </div>
+                <div class="form-group">
+                    <label for="missionEndDate">Target Completion Date</label>
+                    <input type="date" id="missionEndDate">
+                </div>
+                <div class="form-group">
+                    <label for="missionPriority">Project Priority</label>
+                    <select id="missionPriority">
+                        <option value="high">🔴 High Priority (Urgent & Important)</option>
+                        <option value="medium">🟡 Medium Priority (Important but not urgent)</option>
+                        <option value="low">🟢 Low Priority (Nice to have)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="missionDescription">Project Description</label>
+                    <textarea id="missionDescription" rows="4" placeholder="Detailed project objectives and scope..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="expectedRevenue">Expected Revenue ($)</label>
+                    <input type="number" id="expectedRevenue" step="0.01" min="0" placeholder="How much money will this project generate?">
+                </div>
+            </div>
+
+            <button class="btn btn-success" onclick="addMission()">🚢 Launch Project</button>
+
+            <h3 style="margin-top: 30px;">Active Business Projects</h3>
+            <div id="activeMissions"></div>
+        </div>
+
+        <!-- Crew Registry Tab -->
+        <div id="crew" class="tab-content">
+            <div class="page-title">
+                <h2>⚓ Ship's Crew (Team & Helpers)</h2>
+                <div class="page-subtitle">Manage employees, contractors, and business helpers</div>
+                <div class="page-explanation">Track people who work with or for your business - employees, contractors, assistants, virtual helpers, etc.</div>
+            </div>
+
+            <div class="explanation-box">
+                <h4>⚓ Who is Your Crew?</h4>
+                <p>Your "crew" includes anyone who helps run your business - employees, contractors, virtual assistants, freelancers, or business partners.</p>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="crewName">Team Member Name *</label>
+                    <input type="text" id="crewName" placeholder="Full Name" required>
+                </div>
+                <div class="form-group">
+                    <label for="crewRole">Role/Position</label>
+                    <select id="crewRole">
+                        <option value="employee">Employee</option>
+                        <option value="contractor">Contractor/Freelancer</option>
+                        <option value="va">Virtual Assistant</option>
+                        <option value="partner">Business Partner</option>
+                        <option value="intern">Intern</option>
+                        <option value="consultant">Consultant</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="crewEmail">Email Address</label>
+                    <input type="email" id="crewEmail" placeholder="example@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="crewPhone">Phone Number</label>
+                    <input type="tel" id="crewPhone" placeholder="(555) 123-4567">
+                </div>
+                <div class="form-group">
+                    <label for="crewRate">Pay Rate ($/hour or project)</label>
+                    <input type="number" id="crewRate" step="0.01" min="0" placeholder="How much do you pay them?">
+                </div>
+                <div class="form-group">
+                    <label for="crewStartDate">Start Date</label>
+                    <input type="date" id="crewStartDate">
+                </div>
+                <div class="form-group">
+                    <label for="crewSkills">Skills/Specialties</label>
+                    <textarea id="crewSkills" rows="2" placeholder="What are they good at? What do they help with?"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="crewNotes">Notes</label>
+                    <textarea id="crewNotes" rows="3" placeholder="Important details about this team member..."></textarea>
+                </div>
+            </div>
+
+            <button class="btn btn-success" onclick="addCrewMember()">⚓ Add Team Member</button>
+
+            <h3 style="margin-top: 30px;">Your Business Team</h3>
+            <table class="data-table" id="crewTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Rate</th>
+                        <th>Start Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="crewTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Customer Registry Tab -->
+        <div id="customers" class="tab-content">
+            <div class="page-title">
+                <h2>👥 Customer Registry (Client Database)</h2>
+                <div class="page-subtitle">Manage customers and prospects for targeted marketing</div>
+                <div class="page-explanation">Track all your customers, prospects, and leads. Organize them for targeted marketing campaigns and relationship management.</div>
+            </div>
+
+            <div class="explanation-box">
+                <h4>👥 Why Separate Customers?</h4>
+                <p>Keeping customers separate from your team helps you create targeted marketing campaigns, track customer lifetime value, and manage relationships better.</p>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="customerName">Customer Name *</label>
+                    <input type="text" id="customerName" placeholder="Full Name or Company" required>
+                </div>
+                <div class="form-group">
+                    <label for="customerType">Customer Type</label>
+                    <select id="customerType">
+                        <option value="paying-customer">Paying Customer</option>
+                        <option value="prospect">Prospect/Lead</option>
+                        <option value="subscriber">Email Subscriber</option>
+                        <option value="follower">Social Media Follower</option>
+                        <option value="past-customer">Past Customer</option>
+                        <option value="referral">Referral Source</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="customerEmail">Email Address (Email or Phone required)</label>
+                    <input type="email" id="customerEmail" placeholder="email@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="customerPhone">Phone Number (Email or Phone required)</label>
+                    <input type="tel" id="customerPhone" placeholder="(555) 123-4567">
+                </div>
+                <div class="form-group">
+                    <label for="customerValue">Total Value ($)</label>
+                    <input type="number" id="customerValue" step="0.01" min="0" placeholder="How much have they spent?">
+                </div>
+                <div class="form-group">
+                    <label for="customerSource">How They Found You</label>
+                    <select id="customerSource">
+                        <option value="referral">Referral</option>
+                        <option value="social-media">Social Media</option>
+                        <option value="google">Google Search</option>
+                        <option value="advertisement">Advertisement</option>
+                        <option value="word-of-mouth">Word of Mouth</option>
+                        <option value="networking">Networking Event</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="customerFirstPurchase">First Purchase Date</label>
+                    <input type="date" id="customerFirstPurchase">
+                </div>
+                <div class="form-group">
+                    <label for="customerInterests">Interests/Preferences</label>
+                    <textarea id="customerInterests" rows="2" placeholder="What are they interested in? Buying patterns?"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="customerNotes">Customer Notes</label>
+                    <textarea id="customerNotes" rows="3" placeholder="Important details about this customer..."></textarea>
+                </div>
+            </div>
+
+            <button class="btn btn-success" onclick="addCustomer()">👥 Add Customer</button>
+
+            <div style="margin-top: 30px;">
+                <h3>Customer Database</h3>
+                <div class="registry-tabs">
+                    <button class="registry-tab active" onclick="filterCustomers('all')">All Customers</button>
+                    <button class="registry-tab" onclick="filterCustomers('paying-customer')">Paying Customers</button>
+                    <button class="registry-tab" onclick="filterCustomers('prospect')">Prospects</button>
+                    <button class="registry-tab" onclick="filterCustomers('subscriber')">Subscribers</button>
+                </div>
+            </div>
+
+            <table class="data-table" id="customerTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Contact</th>
+                        <th>Value</th>
+                        <th>Source</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="customerTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Marketing Tab -->
+        <div id="marketing" class="tab-content">
+            <div class="page-title">
+                <h2>📢 Signal Operations (Marketing Campaigns)</h2>
+                <div class="page-subtitle">Plan and track your marketing efforts</div>
+                <div class="page-explanation">Manage advertising campaigns, track marketing performance, and plan your promotional activities across different platforms.</div>
+            </div>
+
+            <div class="explanation-box">
+                <h4>📢 What are Signal Operations?</h4>
+                <p>Your "signals" are all your marketing activities - ads, social media posts, email campaigns, or any way you promote your business.</p>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="campaignName">Campaign Name</label>
+                    <input type="text" id="campaignName" placeholder="e.g., Summer Product Launch, Holiday Sale">
+                </div>
+                <div class="form-group">
+                    <label for="campaignPlatform">Marketing Platform</label>
+                    <select id="campaignPlatform">
+                        <option value="facebook">Facebook</option>
+                        <option value="instagram">Instagram</option>
+                        <option value="google">Google Ads</option>
+                        <option value="linkedin">LinkedIn</option>
+                        <option value="twitter">Twitter</option>
+                        <option value="email">Email Marketing</option>
+                        <option value="tiktok">TikTok</option>
+                        <option value="youtube">YouTube</option>
+                        <option value="print">Print/Local</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="campaignBudget">Marketing Budget ($)</label>
+                    <input type="number" id="campaignBudget" step="0.01" min="0" placeholder="How much will you spend?">
+                </div>
+                <div class="form-group">
+                    <label for="campaignGoal">Campaign Goal</label>
+                    <select id="campaignGoal">
+                        <option value="sales">Generate Sales</option>
+                        <option value="leads">Get Leads</option>
+                        <option value="awareness">Brand Awareness</option>
+                        <option value="traffic">Website Traffic</option>
+                        <option value="engagement">Social Engagement</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="campaignMessage">Marketing Message</label>
+                    <textarea id="campaignMessage" rows="3" placeholder="Your main marketing message or ad copy..."></textarea>
+                </div>
+            </div>
+
+            <button class="btn btn-success" onclick="addMarketingCampaign()">🚢 Launch Marketing Campaign</button>
+
+            <h3 style="margin-top: 30px;">Marketing Campaign Performance</h3>
+            <div style="margin-bottom: 15px;">
+                <button class="btn" onclick="filterMarketing('all')" style="margin-right:5px;">All Campaigns</button>
+                <button class="btn" onclick="filterMarketing('active')" style="margin-right:5px;background:#4CAF50;color:white;">✅ Active</button>
+                <button class="btn" onclick="filterMarketing('paused')" style="margin-right:5px;background:#FF9800;color:white;">⏸️ Paused</button>
+                <button class="btn" onclick="filterMarketing('expired')" style="background:#9E9E9E;color:white;">🔒 Expired</button>
+            </div>
+            <div id="marketingContainer"></div>
+        </div>
+
+        <!-- Reports Tab -->
+        <div id="reports" class="tab-content">
+            <div class="page-title">
+                <h2>📈 Ship Reports (Business Analytics)</h2>
+                <div class="page-subtitle">Analyze your business performance</div>
+                <div class="page-explanation">Review detailed analytics, track growth metrics, and understand your business performance over time.</div>
+            </div>
+
+            <div class="explanation-box">
+                <h4>📈 What are Ship Reports?</h4>
+                <p>These are your business analytics - detailed insights into revenue, growth, customer trends, and overall business performance.</p>
+            </div>
+            
+            <div class="dashboard-grid">
+                <div class="chart-container">
+                    <h3>Quarterly Performance</h3>
+                    <canvas id="quarterlyChart" width="400" height="200"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Expense Breakdown</h3>
+                    <canvas id="expenseChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px;">📈 Business Growth Metrics</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 id="totalRevenue">$0</h3>
+                    <p>Total Revenue</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="averageMonthly">$0</h3>
+                    <p>Average Monthly Revenue</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="bestMonth">$0</h3>
+                    <p>Best Month</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="daysSailing">0</h3>
+                    <p>Days in Business</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="customerGrowth">+0</h3>
+                    <p>New Customers This Month</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="avgCustomerValue">$0</h3>
+                    <p>Average Customer Value</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize data storage with separated crew and customers
+        let shipData = {
+            treasure: JSON.parse(localStorage.getItem('shipTreasure')) || [],
+            crew: JSON.parse(localStorage.getItem('shipCrew')) || [],
+            customers: JSON.parse(localStorage.getItem('shipCustomers')) || [],
+            missions: JSON.parse(localStorage.getItem('shipMissions')) || [],
+            goals: JSON.parse(localStorage.getItem('shipGoals')) || { monthlyTreasure: 0 },
+            businessPlan: JSON.parse(localStorage.getItem('shipBusinessPlan')) || {},
+            services: JSON.parse(localStorage.getItem('shipServices')) || [],
+            dailyLogs: JSON.parse(localStorage.getItem('shipDailyLogs')) || [],
+            marketing: JSON.parse(localStorage.getItem('shipMarketing')) || []
+        };
+
+        // Chart instances
+        let charts = {};
+
+        // Cross-browser and cross-platform compatibility check
+        function checkCompatibility() {
+            const results = {
+                localStorage: false,
+                browser: 'unknown',
+                platform: 'unknown',
+                compatible: true,
+                warnings: []
+            };
+
+            // Check localStorage support
+            try {
+                const test = 'test';
+                localStorage.setItem(test, test);
+                localStorage.removeItem(test);
+                results.localStorage = true;
+            } catch(e) {
+                results.localStorage = false;
+                results.compatible = false;
+                results.warnings.push('Data saving may not work properly');
+            }
+
+            // Detect browser and platform
+            const userAgent = navigator.userAgent.toLowerCase();
+            
+            if (userAgent.includes('chrome') && !userAgent.includes('edg')) {
+                results.browser = 'Chrome';
+            } else if (userAgent.includes('safari') && !userAgent.includes('chrome')) {
+                results.browser = 'Safari';
+            } else if (userAgent.includes('edg')) {
+                results.browser = 'Edge';
+            } else if (userAgent.includes('firefox')) {
+                results.browser = 'Firefox';
+            } else {
+                results.browser = 'Other';
+                results.warnings.push('Browser may not be fully supported');
+            }
+
+            // Detect platform
+            if (userAgent.includes('android')) {
+                results.platform = 'Android';
+            } else if (userAgent.includes('iphone') || userAgent.includes('ipad') || userAgent.includes('ipod')) {
+                results.platform = 'iOS';
+            } else if (userAgent.includes('windows')) {
+                results.platform = 'Windows';
+            } else if (userAgent.includes('mac')) {
+                results.platform = 'Mac';
+            } else {
+                results.platform = 'Other';
+            }
+
+            return results;
+        }
+
+        // Cross-browser localStorage check
+        function isLocalStorageAvailable() {
+            try {
+                const test = 'test';
+                localStorage.setItem(test, test);
+                localStorage.removeItem(test);
+                return true;
+            } catch(e) {
+                return false;
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check compatibility
+            const compatibility = checkCompatibility();
+            
+            // Show compatibility warnings if needed
+            if (!compatibility.compatible || compatibility.warnings.length > 0) {
+                let message = `Detected: ${compatibility.browser} on ${compatibility.platform}. `;
+                if (compatibility.warnings.length > 0) {
+                    message += compatibility.warnings.join('. ') + '. ';
+                }
+                message += 'For best experience, use Chrome, Safari, Edge, or Firefox.';
+                showAlert(message, 'warning');
+            }
+            
+            // Add touch event listeners for mobile devices
+            if (compatibility.platform === 'Android' || compatibility.platform === 'iOS') {
+                document.body.addEventListener('touchstart', function() {}, { passive: true });
+            }
+            
+            initializeCharts();
+            updateDashboard();
+            loadAllData();
+            
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('treasureDate').value = today;
+            document.getElementById('crewStartDate').value = today;
+            document.getElementById('customerFirstPurchase').value = today;
+            document.getElementById('missionStartDate').value = today;
+            document.getElementById('dailyLogDate').value = today;
+        });
+
+        // Tab navigation function
+        function showTab(tabName, element) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all nav buttons
+            document.querySelectorAll('.nav-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked button
+            if (element) {
+                element.classList.add('active');
+            } else if (event && event.target) {
+                event.target.classList.add('active');
+            }
+            
+            // Update charts when switching to dashboard
+            if (tabName === 'dashboard') {
+                setTimeout(updateDashboard, 100);
+            }
+        }
+
+        // Load all data when app starts
+        function loadAllData() {
+            loadTreasureTable();
+            loadCrewTable();
+            loadCustomerTable();
+            loadMissions();
+            loadServices();
+            loadDailyLogs();
+            loadMarketing();
+        }
+
+        // Initialize all charts
+        function initializeCharts() {
+            // Treasure Chart
+            const treasureCtx = document.getElementById('treasureChart').getContext('2d');
+            charts.treasure = new Chart(treasureCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Daily Revenue',
+                        data: [],
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Profit Loss Chart
+            const profitCtx = document.getElementById('profitLossChart').getContext('2d');
+            charts.profitLoss = new Chart(profitCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [0, 0, 0, 0, 0, 0],
+                        backgroundColor: 'rgba(46, 204, 113, 0.8)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Customer Growth Chart
+            const customerCtx = document.getElementById('customerGrowthChart').getContext('2d');
+            charts.customerGrowth = new Chart(customerCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Total Customers',
+                        data: [],
+                        borderColor: '#9b59b6',
+                        backgroundColor: 'rgba(155, 89, 182, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Revenue Sources Chart
+            const revenueCtx = document.getElementById('revenueSourcesChart').getContext('2d');
+            charts.revenueSources = new Chart(revenueCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Services', 'Products', 'Subscriptions', 'Consulting', 'Other'],
+                    datasets: [{
+                        data: [0, 0, 0, 0, 0],
+                        backgroundColor: [
+                            '#3498db',
+                            '#2ecc71',
+                            '#f39c12',
+                            '#9b59b6',
+                            '#e74c3c'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+
+            // Quarterly Chart
+            const quarterlyCtx = document.getElementById('quarterlyChart').getContext('2d');
+            charts.quarterly = new Chart(quarterlyCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                    datasets: [{
+                        label: 'Quarterly Revenue',
+                        data: [0, 0, 0, 0],
+                        backgroundColor: 'rgba(52, 152, 219, 0.8)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Expense Chart
+            const expenseCtx = document.getElementById('expenseChart').getContext('2d');
+            charts.expense = new Chart(expenseCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Marketing', 'Tools', 'Supplies', 'Transport', 'Other'],
+                    datasets: [{
+                        data: [0, 0, 0, 0, 0],
+                        backgroundColor: [
+                            '#e74c3c',
+                            '#f39c12',
+                            '#2ecc71',
+                            '#9b59b6',
+                            '#34495e'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+
+        // Update dashboard with current data
+        function updateDashboard() {
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            
+            // Calculate current month's treasure
+            const currentMonthTreasure = shipData.treasure
+                .filter(entry => {
+                    const entryDate = new Date(entry.date);
+                    return entryDate.getMonth() === currentMonth && entryDate.getFullYear() === currentYear;
+                })
+                .reduce((sum, entry) => sum + parseFloat(entry.amount), 0);
+            
+            // Update stat cards
+            document.getElementById('monthlyGoal').textContent = '$' + (shipData.goals.monthlyTreasure || 0);
+            document.getElementById('currentTreasure').textContent = '$' + currentMonthTreasure.toFixed(2);
+            document.getElementById('totalCustomers').textContent = shipData.customers.length;
+            document.getElementById('totalCrew').textContent = shipData.crew.length;
+            document.getElementById('totalMissions').textContent = shipData.missions.filter(m => m.status === 'active').length;
+            document.getElementById('totalServices').textContent = shipData.services.length;
+            
+            // Calculate growth rate
+            const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+            const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+            const lastMonthTreasure = shipData.treasure
+                .filter(entry => {
+                    const entryDate = new Date(entry.date);
+                    return entryDate.getMonth() === lastMonth && entryDate.getFullYear() === lastMonthYear;
+                })
+                .reduce((sum, entry) => sum + parseFloat(entry.amount), 0);
+            
+            const growthRate = lastMonthTreasure > 0 ? 
+                ((currentMonthTreasure - lastMonthTreasure) / lastMonthTreasure * 100) : 0;
+            document.getElementById('growthRate').textContent = growthRate.toFixed(1) + '%';
+            
+            // Update treasure progress
+            updateTreasureProgress();
+            
+            // Update charts with real data
+            updateChartsWithData();
+        }
+
+        function updateChartsWithData() {
+            // Update treasure chart with daily data
+            const last30Days = [];
+            const treasureData = [];
+            
+            for (let i = 29; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+                last30Days.push(date.toLocaleDateString());
+                
+                const dayTreasure = shipData.treasure
+                    .filter(entry => entry.date === dateStr)
+                    .reduce((sum, entry) => sum + parseFloat(entry.amount), 0);
+                treasureData.push(dayTreasure);
+            }
+            
+            charts.treasure.data.labels = last30Days;
+            charts.treasure.data.datasets[0].data = treasureData;
+            charts.treasure.update();
+            
+            // Update revenue sources chart
+            const sourceTotals = {
+                services: 0,
+                products: 0,
+                subscriptions: 0,
+                consulting: 0,
+                other: 0
+            };
+            
+            shipData.treasure.forEach(entry => {
+                if (sourceTotals.hasOwnProperty(entry.source)) {
+                    sourceTotals[entry.source] += parseFloat(entry.amount);
+                }
+            });
+            
+            charts.revenueSources.data.datasets[0].data = [
+                sourceTotals.services,
+                sourceTotals.products,
+                sourceTotals.subscriptions,
+                sourceTotals.consulting,
+                sourceTotals.other
+            ];
+            charts.revenueSources.update();
+            
+            // Update Ship Reports
+            updateShipReports();
+        }
+
+        function updateShipReports() {
+            // Calculate total revenue
+            const totalRevenue = shipData.treasure.reduce((sum, entry) => sum + parseFloat(entry.amount), 0);
+            
+            // Calculate monthly data
+            const monthlyData = {};
+            shipData.treasure.forEach(entry => {
+                const date = new Date(entry.date);
+                const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+                if (!monthlyData[monthKey]) {
+                    monthlyData[monthKey] = 0;
+                }
+                monthlyData[monthKey] += parseFloat(entry.amount);
+            });
+            
+            const monthlyTotals = Object.values(monthlyData);
+            const averageMonthly = monthlyTotals.length > 0 ? monthlyTotals.reduce((a, b) => a + b, 0) / monthlyTotals.length : 0;
+            const bestMonth = monthlyTotals.length > 0 ? Math.max(...monthlyTotals) : 0;
+            
+            // Calculate days in business
+            if (shipData.treasure.length > 0) {
+                const dates = shipData.treasure.map(entry => new Date(entry.date));
+                const earliestDate = new Date(Math.min(...dates));
+                const daysSailing = Math.floor((new Date() - earliestDate) / (1000 * 60 * 60 * 24));
+                document.getElementById('daysSailing').textContent = daysSailing;
+            }
+            
+            // Calculate customer growth
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            const newCustomersThisMonth = shipData.customers.filter(customer => {
+                if (!customer.firstPurchase) return false;
+                const purchaseDate = new Date(customer.firstPurchase);
+                return purchaseDate.getMonth() === currentMonth && purchaseDate.getFullYear() === currentYear;
+            }).length;
+            
+            // Calculate average customer value
+            const avgCustomerValue = shipData.customers.length > 0 ? 
+                shipData.customers.reduce((sum, c) => sum + (parseFloat(c.value) || 0), 0) / shipData.customers.length : 0;
+            
+            // Update stat cards
+            document.getElementById('totalRevenue').textContent = '$' + totalRevenue.toFixed(2);
+            document.getElementById('averageMonthly').textContent = '$' + averageMonthly.toFixed(2);
+            document.getElementById('bestMonth').textContent = '$' + bestMonth.toFixed(2);
+            document.getElementById('customerGrowth').textContent = '+' + newCustomersThisMonth;
+            document.getElementById('avgCustomerValue').textContent = '$' + avgCustomerValue.toFixed(2);
+            
+            // Update quarterly chart
+            const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
+            const quarterlyRevenue = [0, 0, 0, 0];
+            
+            shipData.treasure.forEach(entry => {
+                const date = new Date(entry.date);
+                const quarter = Math.floor(date.getMonth() / 3);
+                quarterlyRevenue[quarter] += parseFloat(entry.amount);
+            });
+            
+            if (charts.quarterly) {
+                charts.quarterly.data.labels = quarters;
+                charts.quarterly.data.datasets[0].data = quarterlyRevenue;
+                charts.quarterly.update();
+            }
+            
+            // Update expense chart (using product categories)
+            const productRevenue = {};
+            shipData.treasure.forEach(entry => {
+                const source = entry.source || 'Other';
+                if (!productRevenue[source]) {
+                    productRevenue[source] = 0;
+                }
+                productRevenue[source] += parseFloat(entry.amount);
+            });
+            
+            const topSources = Object.entries(productRevenue)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+            
+            if (charts.expense) {
+                charts.expense.data.labels = topSources.map(s => s[0]);
+                charts.expense.data.datasets[0].data = topSources.map(s => s[1]);
+                charts.expense.update();
+            }
+        }
+
+        // Business Plan Functions
+        function saveBusinessPlan() {
+            const businessPlan = {
+                mission: document.getElementById('businessMission').value,
+                targetCustomers: document.getElementById('targetCustomers').value,
+                uniqueValue: document.getElementById('uniqueValue').value,
+                sixMonthGoal: document.getElementById('sixMonthGoal').value,
+                oneYearGoal: document.getElementById('oneYearGoal').value,
+                fiveYearGoal: document.getElementById('fiveYearGoal').value
+            };
+            
+            shipData.businessPlan = businessPlan;
+            localStorage.setItem('shipBusinessPlan', JSON.stringify(businessPlan));
+            showAlert('Business plan saved successfully!', 'success');
+        }
+
+        function loadBusinessPlan() {
+            if (shipData.businessPlan && Object.keys(shipData.businessPlan).length > 0) {
+                document.getElementById('businessMission').value = shipData.businessPlan.mission || '';
+                document.getElementById('targetCustomers').value = shipData.businessPlan.targetCustomers || '';
+                document.getElementById('uniqueValue').value = shipData.businessPlan.uniqueValue || '';
+                document.getElementById('sixMonthGoal').value = shipData.businessPlan.sixMonthGoal || '';
+                document.getElementById('oneYearGoal').value = shipData.businessPlan.oneYearGoal || '';
+                document.getElementById('fiveYearGoal').value = shipData.businessPlan.fiveYearGoal || '';
+            }
+        }
+
+        // Services Functions
+        function addService() {
+            const name = document.getElementById('serviceName').value;
+            const price = parseFloat(document.getElementById('servicePrice').value) || 0;
+            const time = parseFloat(document.getElementById('serviceTime').value) || 0;
+            const description = document.getElementById('serviceDescription').value;
+            
+            if (!name) {
+                showAlert('Please enter service name!', 'warning');
+                return;
+            }
+            
+            const service = {
+                id: Date.now(),
+                name: name,
+                price: price,
+                time: time,
+                description: description
+            };
+            
+            shipData.services.push(service);
+            localStorage.setItem('shipServices', JSON.stringify(shipData.services));
+            
+            // Clear form
+            document.getElementById('serviceName').value = '';
+            document.getElementById('servicePrice').value = '';
+            document.getElementById('serviceTime').value = '';
+            document.getElementById('serviceDescription').value = '';
+            
+            loadServices();
+            updateDashboard();
+            showAlert('Service added to catalog!', 'success');
+        }
+
+        function loadServices() {
+            const container = document.getElementById('servicesContainer');
+            container.innerHTML = '';
+            
+            shipData.services.forEach(service => {
+                const serviceCard = document.createElement('div');
+                serviceCard.className = 'service-card';
+                serviceCard.innerHTML = `
+                    <h4>${service.name}</h4>
+                    <p><strong>Price:</strong> $${service.price.toFixed(2)}</p>
+                    <p><strong>Time:</strong> ${service.time} hours</p>
+                    <p><strong>Description:</strong> ${service.description}</p>
+                    <button class="btn btn-primary" onclick="editService(${service.id})">✏️ Edit</button>
+                    <button class="btn btn-danger" onclick="deleteService(${service.id})">🗑️ Remove</button>
+                `;
+                container.appendChild(serviceCard);
+            });
+        }
+
+        function deleteService(id) {
+            shipData.services = shipData.services.filter(service => service.id !== id);
+            localStorage.setItem('shipServices', JSON.stringify(shipData.services));
+            loadServices();
+            updateDashboard();
+            showAlert('Service removed!', 'success');
+        }
+
+        let editingServiceId = null;
+
+        function editService(id) {
+            const service = shipData.services.find(s => s.id === id);
+            if (!service) return;
+            
+            // Populate form with service data
+            document.getElementById('serviceName').value = service.name;
+            document.getElementById('servicePrice').value = service.price;
+            document.getElementById('serviceTime').value = service.time;
+            document.getElementById('serviceDescription').value = service.description;
+            
+            // Change button to update mode
+            editingServiceId = id;
+            const btn = document.querySelector('#services button.btn-success');
+            btn.textContent = '✏️ Update Service';
+            btn.onclick = updateService;
+            
+            // Scroll to form
+            document.getElementById('serviceName').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function updateService() {
+            const name = document.getElementById('serviceName').value;
+            const price = parseFloat(document.getElementById('servicePrice').value) || 0;
+            const time = parseFloat(document.getElementById('serviceTime').value) || 0;
+            const description = document.getElementById('serviceDescription').value;
+            
+            if (!name) {
+                showAlert('Please enter service name!', 'warning');
+                return;
+            }
+            
+            const index = shipData.services.findIndex(s => s.id === editingServiceId);
+            if (index !== -1) {
+                shipData.services[index] = {
+                    id: editingServiceId,
+                    name: name,
+                    price: price,
+                    time: time,
+                    description: description
+                };
+                
+                localStorage.setItem('shipServices', JSON.stringify(shipData.services));
+                
+                // Clear form
+                document.getElementById('serviceName').value = '';
+                document.getElementById('servicePrice').value = '';
+                document.getElementById('serviceTime').value = '';
+                document.getElementById('serviceDescription').value = '';
+                
+                // Reset button
+                const btn = document.querySelector('#services button.btn-success');
+                btn.textContent = '⚓ Add to Service Catalog';
+                btn.onclick = addService;
+                editingServiceId = null;
+                
+                loadServices();
+                updateDashboard();
+                showAlert('Service updated!', 'success');
+            }
+        }
+
+        // Daily Log Functions
+        function saveDailyLog() {
+            const date = document.getElementById('dailyLogDate').value;
+            const availableTime = document.getElementById('dailyAvailableTime').value;
+            const energyLevel = document.getElementById('dailyEnergyLevel').value;
+            const priority1 = document.getElementById('dailyPriority1').value;
+            const priority2 = document.getElementById('dailyPriority2').value;
+            const priority3 = document.getElementById('dailyPriority3').value;
+            const victories = document.getElementById('dailyVictories').value;
+            
+            if (!date) {
+                showAlert('Please select a date!', 'warning');
+                return;
+            }
+            
+            const dailyLog = {
+                id: Date.now(),
+                date: date,
+                availableTime: availableTime,
+                energyLevel: energyLevel,
+                priorities: [priority1, priority2, priority3].filter(p => p.trim()),
+                victories: victories
+            };
+            
+            // Remove existing log for same date
+            shipData.dailyLogs = shipData.dailyLogs.filter(log => log.date !== date);
+            shipData.dailyLogs.push(dailyLog);
+            localStorage.setItem('shipDailyLogs', JSON.stringify(shipData.dailyLogs));
+            
+            // Clear form
+            document.getElementById('dailyPriority1').value = '';
+            document.getElementById('dailyPriority2').value = '';
+            document.getElementById('dailyPriority3').value = '';
+            document.getElementById('dailyVictories').value = '';
+            
+            loadDailyLogs();
+            showAlert('Daily log saved!', 'success');
+        }
+
+        function loadDailyLogs() {
+            const container = document.getElementById('dailyLogsContainer');
+            container.innerHTML = '';
+            
+            shipData.dailyLogs.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5).forEach(log => {
+                const logCard = document.createElement('div');
+                logCard.className = 'daily-log';
+                logCard.innerHTML = `
+                    <h4>📅 ${new Date(log.date).toLocaleDateString()}</h4>
+                    <p><strong>Energy Level:</strong> ${log.energyLevel}</p>
+                    <p><strong>Available Time:</strong> ${log.availableTime} hours</p>
+                    <p><strong>Priorities:</strong> ${log.priorities.join(', ')}</p>
+                    <p><strong>Accomplishments:</strong> ${log.victories}</p>
+                    <button class="btn btn-primary" onclick="editDailyLog(${log.id})">✏️ Edit</button>
+                    <button class="btn btn-danger" onclick="deleteDailyLog(${log.id})">🗑️ Delete</button>
+                `;
+                container.appendChild(logCard);
+            });
+        }
+
+        function deleteDailyLog(id) {
+            shipData.dailyLogs = shipData.dailyLogs.filter(log => log.id !== id);
+            localStorage.setItem('shipDailyLogs', JSON.stringify(shipData.dailyLogs));
+            loadDailyLogs();
+            showAlert('Daily log deleted!', 'success');
+        }
+
+        let editingDailyLogId = null;
+
+        function editDailyLog(id) {
+            const log = shipData.dailyLogs.find(l => l.id === id);
+            if (!log) return;
+            
+            // Populate form
+            document.getElementById('dailyLogDate').value = log.date;
+            document.getElementById('dailyAvailableTime').value = log.availableTime;
+            document.getElementById('dailyEnergyLevel').value = log.energyLevel;
+            document.getElementById('dailyPriority1').value = log.priorities[0] || '';
+            document.getElementById('dailyPriority2').value = log.priorities[1] || '';
+            document.getElementById('dailyPriority3').value = log.priorities[2] || '';
+            document.getElementById('dailyVictories').value = log.victories;
+            
+            // Change button to update mode
+            editingDailyLogId = id;
+            const btn = document.querySelector('#daily button.btn-success');
+            btn.textContent = '✏️ Update Daily Log';
+            btn.onclick = updateDailyLog;
+            
+            // Scroll to form
+            document.getElementById('dailyLogDate').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function updateDailyLog() {
+            const date = document.getElementById('dailyLogDate').value;
+            const availableTime = document.getElementById('dailyAvailableTime').value;
+            const energyLevel = document.getElementById('dailyEnergyLevel').value;
+            const priority1 = document.getElementById('dailyPriority1').value;
+            const priority2 = document.getElementById('dailyPriority2').value;
+            const priority3 = document.getElementById('dailyPriority3').value;
+            const victories = document.getElementById('dailyVictories').value;
+            
+            if (!date) {
+                showAlert('Please select a date!', 'warning');
+                return;
+            }
+            
+            const index = shipData.dailyLogs.findIndex(l => l.id === editingDailyLogId);
+            if (index !== -1) {
+                shipData.dailyLogs[index] = {
+                    id: editingDailyLogId,
+                    date: date,
+                    availableTime: availableTime,
+                    energyLevel: energyLevel,
+                    priorities: [priority1, priority2, priority3].filter(p => p.trim()),
+                    victories: victories
+                };
+                
+                localStorage.setItem('shipDailyLogs', JSON.stringify(shipData.dailyLogs));
+                
+                // Clear form
+                document.getElementById('dailyPriority1').value = '';
+                document.getElementById('dailyPriority2').value = '';
+                document.getElementById('dailyPriority3').value = '';
+                document.getElementById('dailyVictories').value = '';
+                
+                // Reset button
+                const btn = document.querySelector('#daily button.btn-success');
+                btn.textContent = '⚓ Save Daily Log';
+                btn.onclick = saveDailyLog;
+                editingDailyLogId = null;
+                
+                loadDailyLogs();
+                showAlert('Daily log updated!', 'success');
+            }
+        }
+
+        // Treasure management functions
+        function addTreasureEntry() {
+            const date = document.getElementById('treasureDate').value;
+            const amount = parseFloat(document.getElementById('treasureAmount').value);
+            const source = document.getElementById('treasureSource').value;
+            const notes = document.getElementById('treasureNotes').value;
+            
+            if (!date || !amount || !source) {
+                showAlert('Please fill in all required fields!', 'warning');
+                return;
+            }
+            
+            const entry = {
+                id: Date.now(),
+                date: date,
+                amount: amount,
+                source: source,
+                notes: notes
+            };
+            
+            shipData.treasure.push(entry);
+            localStorage.setItem('shipTreasure', JSON.stringify(shipData.treasure));
+            
+            // Clear form
+            document.getElementById('treasureAmount').value = '';
+            document.getElementById('treasureSource').value = '';
+            document.getElementById('treasureNotes').value = '';
+            
+            loadTreasureTable();
+            updateDashboard();
+            showAlert('Income entry added successfully!', 'success');
+        }
+
+        function loadTreasureTable() {
+            const tbody = document.getElementById('treasureTableBody');
+            tbody.innerHTML = '';
+            
+            shipData.treasure.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(entry => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${new Date(entry.date).toLocaleDateString()}</td>
+                    <td>$${entry.amount.toFixed(2)}</td>
+                    <td>${entry.source}</td>
+                    <td>${entry.notes}</td>
+                    <td>
+                        <button class="btn btn-primary" onclick="editTreasureEntry(${entry.id})">✏️ Edit</button>
+                        <button class="btn btn-danger" onclick="deleteTreasureEntry(${entry.id})">🗑️ Delete</button>
+                    </td>
+                `;
+            });
+            
+            updateTreasureProgress();
+        }
+
+        function deleteTreasureEntry(id) {
+            shipData.treasure = shipData.treasure.filter(entry => entry.id !== id);
+            localStorage.setItem('shipTreasure', JSON.stringify(shipData.treasure));
+            loadTreasureTable();
+            updateDashboard();
+            showAlert('Income entry deleted!', 'success');
+        }
+
+        let editingTreasureId = null;
+
+        function editTreasureEntry(id) {
+            const entry = shipData.treasure.find(e => e.id === id);
+            if (!entry) return;
+            
+            // Populate form
+            document.getElementById('treasureDate').value = entry.date;
+            document.getElementById('treasureAmount').value = entry.amount;
+            document.getElementById('treasureSource').value = entry.source;
+            document.getElementById('treasureNotes').value = entry.notes;
+            
+            // Change button to update mode
+            editingTreasureId = id;
+            const btn = document.querySelector('#treasure button.btn-success');
+            btn.textContent = '✏️ Update Income Entry';
+            btn.onclick = updateTreasureEntry;
+            
+            // Scroll to form
+            document.getElementById('treasureDate').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function updateTreasureEntry() {
+            const date = document.getElementById('treasureDate').value;
+            const amount = parseFloat(document.getElementById('treasureAmount').value);
+            const source = document.getElementById('treasureSource').value;
+            const notes = document.getElementById('treasureNotes').value;
+            
+            if (!date || !amount || !source) {
+                showAlert('Please fill in all required fields!', 'warning');
+                return;
+            }
+            
+            const index = shipData.treasure.findIndex(e => e.id === editingTreasureId);
+            if (index !== -1) {
+                shipData.treasure[index] = {
+                    id: editingTreasureId,
+                    date: date,
+                    amount: amount,
+                    source: source,
+                    notes: notes
+                };
+                
+                localStorage.setItem('shipTreasure', JSON.stringify(shipData.treasure));
+                
+                // Clear form
+                document.getElementById('treasureAmount').value = '';
+                document.getElementById('treasureSource').value = '';
+                document.getElementById('treasureNotes').value = '';
+                
+                // Reset button
+                const btn = document.querySelector('#treasure button.btn-success');
+                btn.textContent = '⚓ Log Income Entry';
+                btn.onclick = addTreasureEntry;
+                editingTreasureId = null;
+                
+                loadTreasureTable();
+                updateDashboard();
+                showAlert('Income entry updated!', 'success');
+            }
+        }
+
+        function setMonthlyGoal() {
+            const goal = parseFloat(document.getElementById('monthlyTreasureGoal').value);
+            if (goal && goal > 0) {
+                shipData.goals.monthlyTreasure = goal;
+                localStorage.setItem('shipGoals', JSON.stringify(shipData.goals));
+                updateTreasureProgress();
+                updateDashboard();
+                showAlert('Monthly revenue goal updated!', 'success');
+            } else {
+                showAlert('Please enter a valid goal amount', 'warning');
+            }
+        }
+
+        function updateTreasureProgress() {
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            
+            const currentMonthTreasure = shipData.treasure
+                .filter(entry => {
+                    const entryDate = new Date(entry.date);
+                    return entryDate.getMonth() === currentMonth && entryDate.getFullYear() === currentYear;
+                })
+                .reduce((sum, entry) => sum + parseFloat(entry.amount), 0);
+            
+            const goal = shipData.goals.monthlyTreasure || 0;
+            const percentage = goal > 0 ? Math.min((currentMonthTreasure / goal) * 100, 100) : 0;
+            
+            document.getElementById('treasureProgress').style.width = percentage + '%';
+            document.getElementById('treasureProgressText').textContent = 
+                `Progress: $${currentMonthTreasure.toFixed(2)} of $${goal.toFixed(2)} (${percentage.toFixed(1)}%)`;
+        }
+
+        // Mission management functions
+        function addMission() {
+            const title = document.getElementById('missionTitle').value;
+            const startDate = document.getElementById('missionStartDate').value;
+            const endDate = document.getElementById('missionEndDate').value;
+            const priority = document.getElementById('missionPriority').value;
+            const description = document.getElementById('missionDescription').value;
+            const expectedRevenue = parseFloat(document.getElementById('expectedRevenue').value) || 0;
+            
+            if (!title || !startDate || !endDate) {
+                showAlert('Please fill in project title and dates!', 'warning');
+                return;
+            }
+            
+            const mission = {
+                id: Date.now(),
+                title: title,
+                startDate: startDate,
+                endDate: endDate,
+                priority: priority,
+                description: description,
+                expectedRevenue: expectedRevenue,
+                status: 'active'
+            };
+            
+            shipData.missions.push(mission);
+            localStorage.setItem('shipMissions', JSON.stringify(shipData.missions));
+            
+            // Clear form
+            document.getElementById('missionTitle').value = '';
+            document.getElementById('missionDescription').value = '';
+            document.getElementById('expectedRevenue').value = '';
+            
+            loadMissions();
+            updateDashboard();
+            showAlert('Project launched successfully!', 'success');
+        }
+
+        function loadMissions() {
+            const container = document.getElementById('activeMissions');
+            container.innerHTML = '';
+            
+            shipData.missions.filter(mission => mission.status === 'active').forEach(mission => {
+                const missionCard = document.createElement('div');
+                missionCard.className = `mission-card priority-${mission.priority}`;
+                missionCard.innerHTML = `
+                    <h4>${mission.title}</h4>
+                    <p><strong>Start:</strong> ${new Date(mission.startDate).toLocaleDateString()}</p>
+                    <p><strong>Target Completion:</strong> ${new Date(mission.endDate).toLocaleDateString()}</p>
+                    <p><strong>Priority:</strong> ${mission.priority}</p>
+                    <p><strong>Expected Revenue:</strong> $${mission.expectedRevenue.toFixed(2)}</p>
+                    <p>${mission.description}</p>
+                    <button class="btn btn-primary" onclick="editMission(${mission.id})">✏️ Edit</button>
+                    <button class="btn btn-success" onclick="completeMission(${mission.id})">✅ Complete</button>
+                    <button class="btn btn-danger" onclick="deleteMission(${mission.id})">🗑️ Cancel</button>
+                `;
+                container.appendChild(missionCard);
+            });
+        }
+
+        function completeMission(id) {
+            const mission = shipData.missions.find(m => m.id === id);
+            if (mission) {
+                mission.status = 'completed';
+                localStorage.setItem('shipMissions', JSON.stringify(shipData.missions));
+                loadMissions();
+                updateDashboard();
+                showAlert('Project completed successfully!', 'success');
+            }
+        }
+
+        function deleteMission(id) {
+            shipData.missions = shipData.missions.filter(mission => mission.id !== id);
+            localStorage.setItem('shipMissions', JSON.stringify(shipData.missions));
+            loadMissions();
+            updateDashboard();
+            showAlert('Project cancelled!', 'success');
+        }
+
+        let editingMissionId = null;
+
+        function editMission(id) {
+            const mission = shipData.missions.find(m => m.id === id);
+            if (!mission) return;
+            
+            // Populate form
+            document.getElementById('missionTitle').value = mission.title;
+            document.getElementById('missionStartDate').value = mission.startDate;
+            document.getElementById('missionEndDate').value = mission.endDate;
+            document.getElementById('missionPriority').value = mission.priority;
+            document.getElementById('missionDescription').value = mission.description;
+            document.getElementById('expectedRevenue').value = mission.expectedRevenue;
+            
+            // Change button to update mode
+            editingMissionId = id;
+            const btn = document.querySelector('#voyage button.btn-success');
+            btn.textContent = '✏️ Update Project';
+            btn.onclick = updateMission;
+            
+            // Scroll to form
+            document.getElementById('missionTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function updateMission() {
+            const title = document.getElementById('missionTitle').value;
+            const startDate = document.getElementById('missionStartDate').value;
+            const endDate = document.getElementById('missionEndDate').value;
+            const priority = document.getElementById('missionPriority').value;
+            const description = document.getElementById('missionDescription').value;
+            const expectedRevenue = parseFloat(document.getElementById('expectedRevenue').value) || 0;
+            
+            if (!title || !startDate || !endDate) {
+                showAlert('Please fill in project title and dates!', 'warning');
+                return;
+            }
+            
+            const index = shipData.missions.findIndex(m => m.id === editingMissionId);
+            if (index !== -1) {
+                shipData.missions[index] = {
+                    id: editingMissionId,
+                    title: title,
+                    startDate: startDate,
+                    endDate: endDate,
+                    priority: priority,
+                    description: description,
+                    expectedRevenue: expectedRevenue,
+                    status: shipData.missions[index].status // Preserve status
+                };
+                
+                localStorage.setItem('shipMissions', JSON.stringify(shipData.missions));
+                
+                // Clear form
+                document.getElementById('missionTitle').value = '';
+                document.getElementById('missionDescription').value = '';
+                document.getElementById('expectedRevenue').value = '';
+                
+                // Reset button
+                const btn = document.querySelector('#voyage button.btn-success');
+                btn.textContent = '🚢 Launch Project';
+                btn.onclick = addMission;
+                editingMissionId = null;
+                
+                loadMissions();
+                updateDashboard();
+                showAlert('Project updated!', 'success');
+            }
+        }
+
+        // Crew management functions (for team members)
+        function addCrewMember() {
+            const name = document.getElementById('crewName').value.trim();
+            const role = document.getElementById('crewRole').value;
+            const email = document.getElementById('crewEmail').value.trim();
+            const phone = document.getElementById('crewPhone').value.trim();
+            const rate = parseFloat(document.getElementById('crewRate').value) || 0;
+            const startDate = document.getElementById('crewStartDate').value;
+            const skills = document.getElementById('crewSkills').value;
+            const notes = document.getElementById('crewNotes').value;
+            
+            if (!name) {
+                showAlert('Please enter team member name!', 'warning');
+                return;
+            }
+            
+            const member = {
+                id: Date.now(),
+                name: name,
+                role: role,
+                email: email,
+                phone: phone,
+                rate: rate,
+                startDate: startDate,
+                skills: skills,
+                notes: notes
+            };
+            
+            shipData.crew.push(member);
+            localStorage.setItem('shipCrew', JSON.stringify(shipData.crew));
+            
+            // Clear form
+            document.getElementById('crewName').value = '';
+            document.getElementById('crewEmail').value = '';
+            document.getElementById('crewPhone').value = '';
+            document.getElementById('crewRate').value = '';
+            document.getElementById('crewSkills').value = '';
+            document.getElementById('crewNotes').value = '';
+            
+            loadCrewTable();
+            updateDashboard();
+            showAlert('Team member added successfully!', 'success');
+        }
+
+        function loadCrewTable() {
+            const tbody = document.getElementById('crewTableBody');
+            tbody.innerHTML = '';
+            
+            shipData.crew.sort((a, b) => new Date(b.startDate) - new Date(a.startDate)).forEach(member => {
+                // Backward compatibility: if old data has "contact" field, use it for email
+                const email = member.email || member.contact || '';
+                const phone = member.phone || '';
+                
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${member.name}</td>
+                    <td>${member.role}</td>
+                    <td>${email}</td>
+                    <td>${phone}</td>
+                    <td>$${member.rate.toFixed(2)}</td>
+                    <td>${member.startDate ? new Date(member.startDate).toLocaleDateString() : ''}</td>
+                    <td>
+                        <button class="btn btn-primary" onclick="editCrewMember(${member.id})">✏️ Edit</button>
+                        <button class="btn btn-danger" onclick="deleteCrewMember(${member.id})">🗑️ Remove</button>
+                    </td>
+                `;
+            });
+        }
+
+        function deleteCrewMember(id) {
+            shipData.crew = shipData.crew.filter(member => member.id !== id);
+            localStorage.setItem('shipCrew', JSON.stringify(shipData.crew));
+            loadCrewTable();
+            updateDashboard();
+            showAlert('Team member removed!', 'success');
+        }
+
+        let editingCrewId = null;
+
+        function editCrewMember(id) {
+            const member = shipData.crew.find(m => m.id === id);
+            if (!member) return;
+            
+            // Backward compatibility: if old data has "contact", use it for email
+            const email = member.email || member.contact || '';
+            const phone = member.phone || '';
+            
+            // Populate form
+            document.getElementById('crewName').value = member.name;
+            document.getElementById('crewRole').value = member.role;
+            document.getElementById('crewEmail').value = email;
+            document.getElementById('crewPhone').value = phone;
+            document.getElementById('crewRate').value = member.rate;
+            document.getElementById('crewStartDate').value = member.startDate;
+            document.getElementById('crewSkills').value = member.skills;
+            document.getElementById('crewNotes').value = member.notes;
+            
+            // Change button to update mode
+            editingCrewId = id;
+            const btn = document.querySelector('#crew button.btn-success');
+            btn.textContent = '✏️ Update Crew Member';
+            btn.onclick = updateCrewMember;
+            
+            // Scroll to form
+            document.getElementById('crewName').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function updateCrewMember() {
+            const name = document.getElementById('crewName').value.trim();
+            const role = document.getElementById('crewRole').value;
+            const email = document.getElementById('crewEmail').value.trim();
+            const phone = document.getElementById('crewPhone').value.trim();
+            const rate = parseFloat(document.getElementById('crewRate').value) || 0;
+            const startDate = document.getElementById('crewStartDate').value;
+            const skills = document.getElementById('crewSkills').value;
+            const notes = document.getElementById('crewNotes').value;
+            
+            if (!name) {
+                showAlert('Please enter team member name!', 'warning');
+                return;
+            }
+            
+            const index = shipData.crew.findIndex(m => m.id === editingCrewId);
+            if (index !== -1) {
+                shipData.crew[index] = {
+                    id: editingCrewId,
+                    name: name,
+                    role: role,
+                    email: email,
+                    phone: phone,
+                    rate: rate,
+                    startDate: startDate,
+                    skills: skills,
+                    notes: notes
+                };
+                
+                localStorage.setItem('shipCrew', JSON.stringify(shipData.crew));
+                
+                // Clear form
+                document.getElementById('crewName').value = '';
+                document.getElementById('crewEmail').value = '';
+                document.getElementById('crewPhone').value = '';
+                document.getElementById('crewRate').value = '';
+                document.getElementById('crewSkills').value = '';
+                document.getElementById('crewNotes').value = '';
+                
+                // Reset button
+                const btn = document.querySelector('#crew button.btn-success');
+                btn.textContent = '⚓ Add Crew Member';
+                btn.onclick = addCrewMember;
+                editingCrewId = null;
+                
+                loadCrewTable();
+                updateDashboard();
+                showAlert('Crew member updated!', 'success');
+            }
+        }
+
+        // Customer management functions (separate from crew)
+        function addCustomer() {
+            const name = document.getElementById('customerName').value.trim();
+            const type = document.getElementById('customerType').value;
+            const email = document.getElementById('customerEmail').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            const value = parseFloat(document.getElementById('customerValue').value) || 0;
+            const source = document.getElementById('customerSource').value;
+            const firstPurchase = document.getElementById('customerFirstPurchase').value;
+            const interests = document.getElementById('customerInterests').value;
+            const notes = document.getElementById('customerNotes').value;
+            
+            if (!name) {
+                showAlert('Please enter customer name!', 'warning');
+                return;
+            }
+            
+            if (!email && !phone) {
+                showAlert('Please provide at least an email address or phone number!', 'warning');
+                return;
+            }
+            
+            const customer = {
+                id: Date.now(),
+                name: name,
+                type: type,
+                email: email,
+                phone: phone,
+                value: value,
+                source: source,
+                firstPurchase: firstPurchase,
+                interests: interests,
+                notes: notes
+            };
+            
+            shipData.customers.push(customer);
+            localStorage.setItem('shipCustomers', JSON.stringify(shipData.customers));
+            
+            // Clear form
+            document.getElementById('customerName').value = '';
+            document.getElementById('customerEmail').value = '';
+            document.getElementById('customerPhone').value = '';
+            document.getElementById('customerValue').value = '';
+            document.getElementById('customerInterests').value = '';
+            document.getElementById('customerNotes').value = '';
+            
+            loadCustomerTable();
+            updateDashboard();
+            showAlert('Customer added successfully!', 'success');
+        }
+
+        function loadCustomerTable(filter = 'all') {
+            const tbody = document.getElementById('customerTableBody');
+            tbody.innerHTML = '';
+            
+            let customersToShow = shipData.customers;
+            if (filter !== 'all') {
+                customersToShow = shipData.customers.filter(customer => customer.type === filter);
+            }
+            
+            customersToShow.sort((a, b) => new Date(b.firstPurchase) - new Date(a.firstPurchase)).forEach(customer => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${customer.name}</td>
+                    <td>${customer.type}</td>
+                    <td>${customer.email}<br>${customer.phone}</td>
+                    <td>$${customer.value.toFixed(2)}</td>
+                    <td>${customer.source}</td>
+                    <td>
+                        <button class="btn btn-primary" onclick="editCustomer(${customer.id})">✏️ Edit</button>
+                        <button class="btn btn-danger" onclick="deleteCustomer(${customer.id})">🗑️ Remove</button>
+                    </td>
+                `;
+            });
+        }
+
+        function filterCustomers(type) {
+            // Update active tab
+            document.querySelectorAll('.registry-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            loadCustomerTable(type);
+        }
+
+        function deleteCustomer(id) {
+            shipData.customers = shipData.customers.filter(customer => customer.id !== id);
+            localStorage.setItem('shipCustomers', JSON.stringify(shipData.customers));
+            loadCustomerTable();
+            updateDashboard();
+            showAlert('Customer removed!', 'success');
+        }
+
+        let editingCustomerId = null;
+
+        function editCustomer(id) {
+            const customer = shipData.customers.find(c => c.id === id);
+            if (!customer) return;
+            
+            // Populate form
+            document.getElementById('customerName').value = customer.name;
+            document.getElementById('customerType').value = customer.type;
+            document.getElementById('customerEmail').value = customer.email;
+            document.getElementById('customerPhone').value = customer.phone;
+            document.getElementById('customerValue').value = customer.value;
+            document.getElementById('customerSource').value = customer.source;
+            document.getElementById('customerFirstPurchase').value = customer.firstPurchase;
+            document.getElementById('customerInterests').value = customer.interests;
+            document.getElementById('customerNotes').value = customer.notes;
+            
+            // Change button to update mode
+            editingCustomerId = id;
+            const btn = document.querySelector('#customers button.btn-success');
+            btn.textContent = '✏️ Update Customer';
+            btn.onclick = updateCustomer;
+            
+            // Scroll to form
+            document.getElementById('customerName').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function updateCustomer() {
+            const name = document.getElementById('customerName').value.trim();
+            const type = document.getElementById('customerType').value;
+            const email = document.getElementById('customerEmail').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            const value = parseFloat(document.getElementById('customerValue').value) || 0;
+            const source = document.getElementById('customerSource').value;
+            const firstPurchase = document.getElementById('customerFirstPurchase').value;
+            const interests = document.getElementById('customerInterests').value;
+            const notes = document.getElementById('customerNotes').value;
+            
+            if (!name) {
+                showAlert('Please enter customer name!', 'warning');
+                return;
+            }
+            
+            if (!email && !phone) {
+                showAlert('Please provide at least an email address or phone number!', 'warning');
+                return;
+            }
+            
+            const index = shipData.customers.findIndex(c => c.id === editingCustomerId);
+            if (index !== -1) {
+                shipData.customers[index] = {
+                    id: editingCustomerId,
+                    name: name,
+                    type: type,
+                    email: email,
+                    phone: phone,
+                    value: value,
+                    source: source,
+                    firstPurchase: firstPurchase,
+                    interests: interests,
+                    notes: notes
+                };
+                
+                localStorage.setItem('shipCustomers', JSON.stringify(shipData.customers));
+                
+                // Clear form
+                document.getElementById('customerName').value = '';
+                document.getElementById('customerEmail').value = '';
+                document.getElementById('customerPhone').value = '';
+                document.getElementById('customerValue').value = '';
+                document.getElementById('customerInterests').value = '';
+                document.getElementById('customerNotes').value = '';
+                
+                // Reset button
+                const btn = document.querySelector('#customers button.btn-success');
+                btn.textContent = '⚓ Add to Customer Registry';
+                btn.onclick = addCustomer;
+                editingCustomerId = null;
+                
+                loadCustomerTable();
+                updateDashboard();
+                showAlert('Customer updated!', 'success');
+            }
+        }
+
+        // Marketing Functions
+        function addMarketingCampaign() {
+            const name = document.getElementById('campaignName').value;
+            const platform = document.getElementById('campaignPlatform').value;
+            const budget = parseFloat(document.getElementById('campaignBudget').value) || 0;
+            const goal = document.getElementById('campaignGoal').value;
+            const message = document.getElementById('campaignMessage').value;
+            
+            if (!name || !message) {
+                showAlert('Please fill in campaign name and message!', 'warning');
+                return;
+            }
+            
+            const campaign = {
+                id: Date.now(),
+                name: name,
+                platform: platform,
+                budget: budget,
+                goal: goal,
+                message: message,
+                status: 'active',
+                dateCreated: new Date().toISOString().split('T')[0]
+            };
+            
+            shipData.marketing.push(campaign);
+            localStorage.setItem('shipMarketing', JSON.stringify(shipData.marketing));
+            
+            // Clear form
+            document.getElementById('campaignName').value = '';
+            document.getElementById('campaignMessage').value = '';
+            document.getElementById('campaignBudget').value = '';
+            
+            loadMarketing();
+            showAlert('Marketing campaign launched!', 'success');
+        }
+
+        function loadMarketing(statusFilter = 'all') {
+            const container = document.getElementById('marketingContainer');
+            container.innerHTML = '';
+            
+            let campaignsToShow = shipData.marketing;
+            if (statusFilter !== 'all') {
+                campaignsToShow = shipData.marketing.filter(c => c.status === statusFilter);
+            }
+            
+            campaignsToShow.forEach(campaign => {
+                const campaignCard = document.createElement('div');
+                campaignCard.className = 'service-card';
+                campaignCard.innerHTML = `
+                    <h4>${campaign.name}</h4>
+                    <p><strong>Platform:</strong> ${campaign.platform}</p>
+                    <p><strong>Goal:</strong> ${campaign.goal}</p>
+                    <p><strong>Budget:</strong> $${campaign.budget.toFixed(2)}</p>
+                    <p><strong>Message:</strong> ${campaign.message}</p>
+                    <p><strong>Status:</strong> 
+                        <select onchange="changeCampaignStatus(${campaign.id}, this.value)" style="padding:5px;border-radius:4px;">
+                            <option value="active" ${campaign.status === 'active' ? 'selected' : ''}>✅ Active</option>
+                            <option value="paused" ${campaign.status === 'paused' ? 'selected' : ''}>⏸️ Paused</option>
+                            <option value="expired" ${campaign.status === 'expired' ? 'selected' : ''}>🔒 Expired</option>
+                        </select>
+                    </p>
+                    <p><strong>Created:</strong> ${new Date(campaign.dateCreated).toLocaleDateString()}</p>
+                    <button class="btn btn-primary" onclick="editMarketingCampaign(${campaign.id})">✏️ Edit</button>
+                    <button class="btn btn-danger" onclick="deleteMarketingCampaign(${campaign.id})">🗑️ End Campaign</button>
+                `;
+                container.appendChild(campaignCard);
+            });
+            
+            if (campaignsToShow.length === 0) {
+                container.innerHTML = '<p style="text-align:center;padding:20px;color:#888;">No campaigns found for this filter.</p>';
+            }
+        }
+
+        function deleteMarketingCampaign(id) {
+            shipData.marketing = shipData.marketing.filter(campaign => campaign.id !== id);
+            localStorage.setItem('shipMarketing', JSON.stringify(shipData.marketing));
+            loadMarketing();
+            showAlert('Campaign ended!', 'success');
+        }
+
+        let editingMarketingId = null;
+
+        function editMarketingCampaign(id) {
+            const campaign = shipData.marketing.find(c => c.id === id);
+            if (!campaign) return;
+            
+            // Populate form
+            document.getElementById('campaignName').value = campaign.name;
+            document.getElementById('campaignPlatform').value = campaign.platform;
+            document.getElementById('campaignBudget').value = campaign.budget;
+            document.getElementById('campaignGoal').value = campaign.goal;
+            document.getElementById('campaignMessage').value = campaign.message;
+            
+            // Change button to update mode
+            editingMarketingId = id;
+            const btn = document.querySelector('#marketing button.btn-success');
+            btn.textContent = '✏️ Update Campaign';
+            btn.onclick = updateMarketingCampaign;
+            
+            // Scroll to form
+            document.getElementById('campaignName').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function updateMarketingCampaign() {
+            const name = document.getElementById('campaignName').value;
+            const platform = document.getElementById('campaignPlatform').value;
+            const budget = parseFloat(document.getElementById('campaignBudget').value) || 0;
+            const goal = document.getElementById('campaignGoal').value;
+            const message = document.getElementById('campaignMessage').value;
+            
+            if (!name || !message) {
+                showAlert('Please fill in campaign name and message!', 'warning');
+                return;
+            }
+            
+            const index = shipData.marketing.findIndex(c => c.id === editingMarketingId);
+            if (index !== -1) {
+                shipData.marketing[index] = {
+                    id: editingMarketingId,
+                    name: name,
+                    platform: platform,
+                    budget: budget,
+                    goal: goal,
+                    message: message,
+                    status: shipData.marketing[index].status, // Preserve status
+                    dateCreated: shipData.marketing[index].dateCreated // Preserve date
+                };
+                
+                localStorage.setItem('shipMarketing', JSON.stringify(shipData.marketing));
+                
+                // Clear form
+                document.getElementById('campaignName').value = '';
+                document.getElementById('campaignMessage').value = '';
+                document.getElementById('campaignBudget').value = '';
+                
+                // Reset button
+                const btn = document.querySelector('#marketing button.btn-success');
+                btn.textContent = '🚢 Launch Marketing Campaign';
+                btn.onclick = addMarketingCampaign;
+                editingMarketingId = null;
+                
+                loadMarketing();
+                showAlert('Campaign updated!', 'success');
+            }
+        }
+
+        function filterMarketing(status) {
+            loadMarketing(status);
+        }
+
+        function changeCampaignStatus(id, newStatus) {
+            const campaign = shipData.marketing.find(c => c.id === id);
+            if (campaign) {
+                campaign.status = newStatus;
+                localStorage.setItem('shipMarketing', JSON.stringify(shipData.marketing));
+                showAlert(`Campaign status changed to ${newStatus}!`, 'success');
+            }
+        }
+
+        // Utility functions
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.nav-tabs'));
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+
+        function exportData() {
+            const data = {
+                treasure: shipData.treasure,
+                crew: shipData.crew,
+                customers: shipData.customers,
+                missions: shipData.missions,
+                goals: shipData.goals,
+                businessPlan: shipData.businessPlan,
+                services: shipData.services,
+                dailyLogs: shipData.dailyLogs,
+                marketing: shipData.marketing,
+                exportDate: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `business-data-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            showAlert('Business data exported successfully!', 'success');
+        }
+
+        function printReport() {
+            window.print();
+        }
+
+        function backupData() {
+            const data = {
+                treasure: shipData.treasure,
+                crew: shipData.crew,
+                customers: shipData.customers,
+                missions: shipData.missions,
+                goals: shipData.goals,
+                businessPlan: shipData.businessPlan,
+                services: shipData.services,
+                dailyLogs: shipData.dailyLogs,
+                marketing: shipData.marketing
+            };
+            
+            localStorage.setItem('shipBackup', JSON.stringify(data));
+            showAlert('Business data backed up successfully!', 'success');
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Initialize page - load all saved data
+        function closeWelcome() {
+            document.getElementById('welcomeModal').style.display = 'none';
+            localStorage.setItem('shipTrackerWelcomed', 'true');
+        }
+
+        function initializePage() {
+            loadBusinessPlan();
+            loadServices();
+            loadDailyLogs();
+            loadTreasureTable();
+            loadMissions();
+            loadCrewTable();
+            loadCustomerTable();
+            loadMarketing();
+            updateDashboard();
+            updateTreasureProgress();
+            
+            // Check if first time user
+            if (!localStorage.getItem('shipTrackerWelcomed')) {
+                document.getElementById('welcomeModal').style.display = 'flex';
+            } else {
+                document.getElementById('welcomeModal').style.display = 'none';
+            }
+        }
+
+        // Call init when page loads
+        window.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>
