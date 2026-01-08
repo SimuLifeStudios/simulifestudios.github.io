@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Address Change Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 52%, #2BFF88 90%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(250, 139, 255, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(250, 139, 255, 0.6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #2BFF88 0%, #00d4ff 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(43, 255, 136, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f5576c 0%, #fa709a 100%);
+            color: white;
+            padding: 8px 20px;
+            font-size: 0.9em;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 100%);
+            color: white;
+            padding: 8px 20px;
+            font-size: 0.9em;
+            margin-right: 10px;
+        }
+
+        .btn-edit:hover {
+            transform: translateY(-2px);
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #FA8BFF;
+            box-shadow: 0 0 0 3px rgba(250, 139, 255, 0.2);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+            margin: 40px auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .modal-header h2 {
+            background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2em;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 2em;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #FA8BFF;
+            box-shadow: 0 0 0 3px rgba(250, 139, 255, 0.2);
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .item-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border-left: 5px solid;
+        }
+
+        .item-card.not-started {
+            border-left-color: #f5576c;
+        }
+
+        .item-card.in-progress {
+            border-left-color: #FA8BFF;
+        }
+
+        .item-card.completed {
+            border-left-color: #2BFF88;
+        }
+
+        .item-card.not-applicable {
+            border-left-color: #999;
+            opacity: 0.6;
+        }
+
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .item-card h3 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .item-detail {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .item-detail strong {
+            color: #666;
+            min-width: 90px;
+            font-size: 0.85em;
+        }
+
+        .item-detail span {
+            color: #333;
+            flex: 1;
+            font-size: 0.9em;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state h3 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+        }
+
+        .stat-card.total {
+            background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 100%);
+        }
+
+        .stat-card.completed {
+            background: linear-gradient(135deg, #2BFF88 0%, #00d4ff 100%);
+        }
+
+        .stat-card.in-progress {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stat-card.not-started {
+            background: linear-gradient(135deg, #f5576c 0%, #fa709a 100%);
+        }
+
+        .stat-card.percentage {
+            background: linear-gradient(135deg, #2BD2FF 0%, #2BFF88 100%);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+
+        .filter-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, #fff5f8 0%, #f0f8ff 100%);
+            border-radius: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .filter-group select {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 0.95em;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: #FA8BFF;
+            box-shadow: 0 0 0 3px rgba(250, 139, 255, 0.2);
+        }
+
+        .priority-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .priority-high {
+            background: linear-gradient(135deg, #f5576c 0%, #fa709a 100%);
+            color: white;
+        }
+
+        .priority-medium {
+            background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 100%);
+            color: white;
+        }
+
+        .priority-low {
+            background: linear-gradient(135deg, #2BFF88 0%, #00d4ff 100%);
+            color: white;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.75em;
+            font-weight: 600;
+            background: #f0f0f0;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .time-sensitive {
+            background: linear-gradient(135deg, #f5576c 0%, #fa709a 100%);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.75em;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 8px;
+            margin-left: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                min-width: 100%;
+            }
+
+            .modal-content {
+                padding: 20px;
+                margin: 20px;
+            }
+
+            .items-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-bar {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📬 Address Change Tracker</h1>
+            <p>Stay Organized During Your Move - Never Forget to Update!</p>
+        </div>
+
+        <div class="main-content">
+            <div class="stats-bar">
+                <div class="stat-card total">
+                    <span class="stat-number" id="totalItems">0</span>
+                    <span class="stat-label">Total Items</span>
+                </div>
+                <div class="stat-card completed">
+                    <span class="stat-number" id="completedCount">0</span>
+                    <span class="stat-label">Completed</span>
+                </div>
+                <div class="stat-card in-progress">
+                    <span class="stat-number" id="inProgressCount">0</span>
+                    <span class="stat-label">In Progress</span>
+                </div>
+                <div class="stat-card not-started">
+                    <span class="stat-number" id="notStartedCount">0</span>
+                    <span class="stat-label">Not Started</span>
+                </div>
+                <div class="stat-card percentage">
+                    <span class="stat-number" id="completionPercentage">0%</span>
+                    <span class="stat-label">Complete</span>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 Search by organization, category, or notes...">
+                </div>
+                <button class="btn btn-primary" onclick="openModal()">➕ Add Item</button>
+                <button class="btn btn-success" onclick="loadDefaultItems()">📋 Load Common Items</button>
+                <button class="btn btn-secondary" onclick="exportData()">📥 Export</button>
+                <button class="btn btn-secondary" onclick="importData()">📤 Import</button>
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-group">
+                    <label>Category:</label>
+                    <select id="filterCategory" onchange="displayItems()">
+                        <option value="all">All Categories</option>
+                        <option value="Banking">Banking</option>
+                        <option value="Government">Government</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Insurance">Insurance</option>
+                        <option value="Utilities">Utilities</option>
+                        <option value="Employer">Employer</option>
+                        <option value="Subscriptions">Subscriptions</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Education">Education</option>
+                        <option value="Professional">Professional</option>
+                        <option value="Other">Other</option>
+                    </select>
+
+                    <label>Status:</label>
+                    <select id="filterStatus" onchange="displayItems()">
+                        <option value="all">All Statuses</option>
+                        <option value="not-started">Not Started</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="not-applicable">Not Applicable</option>
+                    </select>
+
+                    <label>Priority:</label>
+                    <select id="filterPriority" onchange="displayItems()">
+                        <option value="all">All Priorities</option>
+                        <option value="high">High Priority</option>
+                        <option value="medium">Medium Priority</option>
+                        <option value="low">Low Priority</option>
+                    </select>
+
+                    <label>Sort By:</label>
+                    <select id="sortBy" onchange="displayItems()">
+                        <option value="priority">Priority (High First)</option>
+                        <option value="category">Category</option>
+                        <option value="name">Organization Name</option>
+                        <option value="status">Status</option>
+                        <option value="dateAdded">Date Added</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="itemsContainer"></div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="itemModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Item</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+
+            <form id="itemForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="organizationName">Organization/Company Name *</label>
+                        <input type="text" id="organizationName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category *</label>
+                        <select id="category" required>
+                            <option value="">Select...</option>
+                            <option value="Banking">Banking</option>
+                            <option value="Government">Government</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Insurance">Insurance</option>
+                            <option value="Utilities">Utilities</option>
+                            <option value="Employer">Employer</option>
+                            <option value="Subscriptions">Subscriptions (Magazines, Books, etc.)</option>
+                            <option value="Shopping">Shopping & Retail</option>
+                            <option value="Education">Education</option>
+                            <option value="Professional">Professional Services</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="priority">Priority Level *</label>
+                        <select id="priority" required>
+                            <option value="high">🔴 High Priority</option>
+                            <option value="medium">🟡 Medium Priority</option>
+                            <option value="low">🟢 Low Priority</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contactMethod">Contact Method</label>
+                        <select id="contactMethod">
+                            <option value="">Select...</option>
+                            <option value="Online Portal">Online Portal</option>
+                            <option value="Phone">Phone</option>
+                            <option value="Mail">Mail</option>
+                            <option value="In-Person">In-Person</option>
+                            <option value="Mobile App">Mobile App</option>
+                            <option value="Email">Email</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="websiteUrl">Website/Portal URL</label>
+                        <input type="url" id="websiteUrl">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phoneNumber">Phone Number</label>
+                        <input type="tel" id="phoneNumber">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status">Status *</label>
+                        <select id="status" required>
+                            <option value="not-started">Not Started</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="not-applicable">Not Applicable</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dateCompleted">Date Completed</label>
+                        <input type="date" id="dateCompleted">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmationNumber">Confirmation Number</label>
+                        <input type="text" id="confirmationNumber">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Time Sensitive?</label>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="timeSensitive">
+                            <label for="timeSensitive">Must be updated within 30 days of move</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Notes</label>
+                        <textarea id="notes" placeholder="Account numbers, specific requirements, deadlines, etc."></textarea>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 30px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let items = [];
+        let editingId = null;
+
+        // Default items to pre-populate
+        const defaultItems = [
+            { name: "USPS Change of Address", category: "Government", priority: "high", contactMethod: "Online Portal", websiteUrl: "https://moversguide.usps.com", timeSensitive: true },
+            { name: "Driver's License", category: "Government", priority: "high", contactMethod: "In-Person", timeSensitive: true },
+            { name: "Vehicle Registration", category: "Government", priority: "high", contactMethod: "In-Person", timeSensitive: true },
+            { name: "Voter Registration", category: "Government", priority: "high", contactMethod: "Online Portal" },
+            { name: "Missouri Notary Commission", category: "Professional", priority: "high", contactMethod: "Mail", timeSensitive: true },
+            
+            { name: "Employer HR Department", category: "Employer", priority: "high", contactMethod: "Email" },
+            { name: "Payroll Department", category: "Employer", priority: "high", contactMethod: "Online Portal" },
+            
+            { name: "Primary Bank", category: "Banking", priority: "high", contactMethod: "Online Portal" },
+            { name: "Credit Card Companies", category: "Banking", priority: "high", contactMethod: "Online Portal" },
+            { name: "Investment Accounts", category: "Banking", priority: "medium", contactMethod: "Online Portal" },
+            
+            { name: "Health Insurance", category: "Insurance", priority: "high", contactMethod: "Phone" },
+            { name: "Auto Insurance", category: "Insurance", priority: "high", contactMethod: "Online Portal" },
+            { name: "Life Insurance", category: "Insurance", priority: "medium", contactMethod: "Phone" },
+            
+            { name: "Primary Care Physician", category: "Healthcare", priority: "high", contactMethod: "Phone" },
+            { name: "Hospital Records", category: "Healthcare", priority: "high", contactMethod: "Phone" },
+            { name: "Pharmacy", category: "Healthcare", priority: "high", contactMethod: "Phone" },
+            { name: "Dentist", category: "Healthcare", priority: "medium", contactMethod: "Phone" },
+            
+            { name: "Electric Company", category: "Utilities", priority: "high", contactMethod: "Phone", timeSensitive: true },
+            { name: "Gas Company", category: "Utilities", priority: "high", contactMethod: "Phone", timeSensitive: true },
+            { name: "Water/Sewer", category: "Utilities", priority: "high", contactMethod: "Phone", timeSensitive: true },
+            { name: "Internet/Cable Provider", category: "Utilities", priority: "high", contactMethod: "Phone" },
+            { name: "Trash/Recycling Service", category: "Utilities", priority: "medium", contactMethod: "Phone" },
+            
+            { name: "Magazine Subscriptions", category: "Subscriptions", priority: "low", contactMethod: "Online Portal" },
+            { name: "Book Clubs/Services", category: "Subscriptions", priority: "low", contactMethod: "Online Portal" },
+            { name: "Amazon Account", category: "Shopping", priority: "medium", contactMethod: "Online Portal" },
+            { name: "Online Shopping Accounts", category: "Shopping", priority: "low", contactMethod: "Online Portal" },
+            
+            { name: "Social Security Administration", category: "Government", priority: "high", contactMethod: "Online Portal" },
+            { name: "IRS", category: "Government", priority: "high", contactMethod: "Online Portal" },
+            { name: "Passport", category: "Government", priority: "medium", contactMethod: "Mail" },
+            
+            { name: "Gym Membership", category: "Other", priority: "low", contactMethod: "In-Person" },
+            { name: "Pet Records/Vet", category: "Healthcare", priority: "medium", contactMethod: "Phone" },
+            { name: "School Records", category: "Education", priority: "high", contactMethod: "In-Person" },
+        ];
+
+        window.addEventListener('DOMContentLoaded', function() {
+            loadItems();
+            displayItems();
+        });
+
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            displayItems();
+        });
+
+        function loadItems() {
+            const saved = localStorage.getItem('addressChangeTracker');
+            if (saved) {
+                items = JSON.parse(saved);
+            }
+        }
+
+        function saveItems() {
+            localStorage.setItem('addressChangeTracker', JSON.stringify(items));
+            updateStats();
+        }
+
+        function loadDefaultItems() {
+            if (items.length > 0) {
+                if (!confirm('This will add common items to your list. Continue?')) {
+                    return;
+                }
+            }
+
+            defaultItems.forEach(item => {
+                // Only add if not already exists
+                if (!items.some(i => i.organizationName === item.name)) {
+                    items.push({
+                        id: Date.now() + Math.random(),
+                        organizationName: item.name,
+                        category: item.category,
+                        priority: item.priority,
+                        contactMethod: item.contactMethod || '',
+                        websiteUrl: item.websiteUrl || '',
+                        phoneNumber: '',
+                        status: 'not-started',
+                        dateCompleted: '',
+                        confirmationNumber: '',
+                        timeSensitive: item.timeSensitive || false,
+                        notes: '',
+                        dateAdded: new Date().toISOString()
+                    });
+                }
+            });
+
+            saveItems();
+            displayItems();
+            alert('Common items loaded! Review and customize as needed.');
+        }
+
+        function openModal(id = null) {
+            editingId = id;
+            const modal = document.getElementById('itemModal');
+            const form = document.getElementById('itemForm');
+            const title = document.getElementById('modalTitle');
+
+            if (id !== null) {
+                title.textContent = 'Edit Item';
+                const item = items.find(i => i.id === id);
+                if (item) {
+                    populateForm(item);
+                }
+            } else {
+                title.textContent = 'Add New Item';
+                form.reset();
+            }
+
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('itemModal').classList.remove('active');
+            document.getElementById('itemForm').reset();
+            editingId = null;
+        }
+
+        function populateForm(item) {
+            document.getElementById('organizationName').value = item.organizationName || '';
+            document.getElementById('category').value = item.category || '';
+            document.getElementById('priority').value = item.priority || 'medium';
+            document.getElementById('contactMethod').value = item.contactMethod || '';
+            document.getElementById('websiteUrl').value = item.websiteUrl || '';
+            document.getElementById('phoneNumber').value = item.phoneNumber || '';
+            document.getElementById('status').value = item.status || 'not-started';
+            document.getElementById('dateCompleted').value = item.dateCompleted || '';
+            document.getElementById('confirmationNumber').value = item.confirmationNumber || '';
+            document.getElementById('timeSensitive').checked = item.timeSensitive || false;
+            document.getElementById('notes').value = item.notes || '';
+        }
+
+        document.getElementById('itemForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = {
+                id: editingId || Date.now(),
+                organizationName: document.getElementById('organizationName').value,
+                category: document.getElementById('category').value,
+                priority: document.getElementById('priority').value,
+                contactMethod: document.getElementById('contactMethod').value,
+                websiteUrl: document.getElementById('websiteUrl').value,
+                phoneNumber: document.getElementById('phoneNumber').value,
+                status: document.getElementById('status').value,
+                dateCompleted: document.getElementById('dateCompleted').value,
+                confirmationNumber: document.getElementById('confirmationNumber').value,
+                timeSensitive: document.getElementById('timeSensitive').checked,
+                notes: document.getElementById('notes').value,
+                dateAdded: editingId ? items.find(i => i.id === editingId).dateAdded : new Date().toISOString()
+            };
+
+            if (editingId !== null) {
+                const index = items.findIndex(i => i.id === editingId);
+                items[index] = formData;
+            } else {
+                items.push(formData);
+            }
+
+            saveItems();
+            displayItems();
+            closeModal();
+        });
+
+        function displayItems() {
+            const container = document.getElementById('itemsContainer');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filterCategory = document.getElementById('filterCategory').value;
+            const filterStatus = document.getElementById('filterStatus').value;
+            const filterPriority = document.getElementById('filterPriority').value;
+            const sortBy = document.getElementById('sortBy').value;
+
+            let filtered = items.filter(item => {
+                const matchesSearch = 
+                    item.organizationName.toLowerCase().includes(searchTerm) ||
+                    (item.category && item.category.toLowerCase().includes(searchTerm)) ||
+                    (item.notes && item.notes.toLowerCase().includes(searchTerm));
+
+                const matchesCategory = filterCategory === 'all' || item.category === filterCategory;
+                const matchesStatus = filterStatus === 'all' || item.status === filterStatus;
+                const matchesPriority = filterPriority === 'all' || item.priority === filterPriority;
+
+                return matchesSearch && matchesCategory && matchesStatus && matchesPriority;
+            });
+
+            // Sort items
+            filtered.sort((a, b) => {
+                switch(sortBy) {
+                    case 'priority':
+                        const priorityOrder = { 'high': 3, 'medium': 2, 'low': 1 };
+                        return (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
+                    case 'category':
+                        return (a.category || '').localeCompare(b.category || '');
+                    case 'name':
+                        return a.organizationName.localeCompare(b.organizationName);
+                    case 'status':
+                        return (a.status || '').localeCompare(b.status || '');
+                    case 'dateAdded':
+                    default:
+                        return new Date(b.dateAdded) - new Date(a.dateAdded);
+                }
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No Items Found</h3>
+                        <p>Click "Add Item" or "Load Common Items" to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="items-grid">
+                    ${filtered.map(item => createItemCard(item)).join('')}
+                </div>
+            `;
+        }
+
+        function createItemCard(item) {
+            const priorityLabels = {
+                'high': '🔴 High',
+                'medium': '🟡 Medium',
+                'low': '🟢 Low'
+            };
+
+            const statusLabels = {
+                'not-started': 'Not Started',
+                'in-progress': 'In Progress',
+                'completed': '✅ Completed',
+                'not-applicable': 'N/A'
+            };
+
+            const statusClass = item.status || 'not-started';
+
+            return `
+                <div class="item-card ${statusClass}">
+                    <div class="category-badge">${item.category}</div>
+                    ${item.timeSensitive ? '<span class="time-sensitive">⏰ Time Sensitive</span>' : ''}
+                    
+                    <h3>${item.organizationName}</h3>
+                    
+                    <div class="item-detail">
+                        <strong>Priority:</strong>
+                        <span><span class="priority-badge priority-${item.priority}">${priorityLabels[item.priority]}</span></span>
+                    </div>
+
+                    <div class="item-detail">
+                        <strong>Status:</strong>
+                        <span>${statusLabels[statusClass]}</span>
+                    </div>
+
+                    ${item.contactMethod ? `
+                    <div class="item-detail">
+                        <strong>Contact:</strong>
+                        <span>${item.contactMethod}</span>
+                    </div>` : ''}
+
+                    ${item.phoneNumber ? `
+                    <div class="item-detail">
+                        <strong>Phone:</strong>
+                        <span><a href="tel:${item.phoneNumber}">${item.phoneNumber}</a></span>
+                    </div>` : ''}
+
+                    ${item.websiteUrl ? `
+                    <div class="item-detail">
+                        <strong>Website:</strong>
+                        <span><a href="${item.websiteUrl}" target="_blank">Visit Site</a></span>
+                    </div>` : ''}
+
+                    ${item.dateCompleted ? `
+                    <div class="item-detail">
+                        <strong>Completed:</strong>
+                        <span>${new Date(item.dateCompleted).toLocaleDateString()}</span>
+                    </div>` : ''}
+
+                    ${item.confirmationNumber ? `
+                    <div class="item-detail">
+                        <strong>Confirmation:</strong>
+                        <span>${item.confirmationNumber}</span>
+                    </div>` : ''}
+
+                    ${item.notes ? `
+                    <div class="item-detail">
+                        <strong>Notes:</strong>
+                        <span>${item.notes}</span>
+                    </div>` : ''}
+
+                    <div class="item-actions">
+                        <button class="btn btn-edit" onclick="openModal(${item.id})">Edit</button>
+                        <button class="btn btn-danger" onclick="deleteItem(${item.id})">Delete</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function deleteItem(id) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                items = items.filter(i => i.id !== id);
+                saveItems();
+                displayItems();
+            }
+        }
+
+        function updateStats() {
+            const total = items.length;
+            const completed = items.filter(i => i.status === 'completed').length;
+            const inProgress = items.filter(i => i.status === 'in-progress').length;
+            const notStarted = items.filter(i => i.status === 'not-started').length;
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            document.getElementById('totalItems').textContent = total;
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('inProgressCount').textContent = inProgress;
+            document.getElementById('notStartedCount').textContent = notStarted;
+            document.getElementById('completionPercentage').textContent = percentage + '%';
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(items, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `address-change-tracker-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        const imported = JSON.parse(event.target.result);
+                        if (confirm(`Import ${imported.length} items? This will replace your current data.`)) {
+                            items = imported;
+                            saveItems();
+                            displayItems();
+                            alert('Data imported successfully!');
+                        }
+                    } catch (error) {
+                        alert('Error importing data. Please check the file format.');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        document.getElementById('itemModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        updateStats();
+    </script>
+</body>
+</html>
